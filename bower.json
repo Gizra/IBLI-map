@@ -2,14 +2,15 @@
   "name": "ibli-map",
   "version": "0.0.1",
   "dependencies": {
-    "angular-masonry": "~0.8.1",
-    "angular-local-storage": "~0.0.4",
+    "angular": "1.2.16",
+    "json3": "~3.2.6",
+    "es5-shim": "~2.1.0",
+    "leaflet": "~0.7.2",
     "angular-leaflet-directive": "~0.7.7"
   },
   "devDependencies": {
-    "angular": "latest",
-    "angular-mocks": "latest",
-    "jquery": "latest",
-    "angular-apimock": "~0.1.4"
+    "angular-apimock": "*",
+    "angular-mocks": "1.2.16",
+    "angular-scenario": "1.2.16"
   }
 }
