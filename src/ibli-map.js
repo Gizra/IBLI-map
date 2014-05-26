@@ -156,10 +156,11 @@ angular
      *    Array of indexes keyed by division ID.
      */
     function _getDivIdToIndex() {
+      var path = Drupal.settings.ibli_general.iblimap_library_path;
       var deferred = $q.defer();
       $http({
         method: 'GET',
-        url: 'csv/indexes' + _getSeason() + '.csv',
+        url: path + '/csv/indexes' + _getSeason() + '.csv',
         serverPredefined: true
       }).success(function(response) {
           divIdToIndex = response.split("\n");
@@ -175,11 +176,12 @@ angular
      *    Object of geoJson data, used for extending the scope.
      */
     function _getGeoJson() {
+      var path = Drupal.settings.ibli_general.iblimap_library_path;
       // Get divisions data from geoJSON file.
       var deferred = $q.defer();
       $http({
         method: 'GET',
-        url: 'json/kenya.json',
+        url: path + '/json/kenya.json',
         serverPredefined: true
       }).success(function(kenyaDivisions) {
           // Prepare geoJson object with the division data.
@@ -290,8 +292,9 @@ angular
 
   })
   .directive('hoverInfo', function () {
+    var path = Drupal.settings.ibli_general.iblimap_library_path;
     return {
-      templateUrl: 'templates/hover-info.html',
+      templateUrl: path + '/templates/hover-info.html',
       restrict: 'AEC'
     };
   });
