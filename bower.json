@@ -1,6 +1,6 @@
 {
   "name": "ibli-map",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "dependencies": {
     "angular": "1.2.16",
     "json3": "~3.2.6",
@@ -12,5 +12,10 @@
     "angular-apimock": "*",
     "angular-mocks": "1.2.16",
     "angular-scenario": "1.2.16"
-  }
+  },
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "src"
+  ]
 }

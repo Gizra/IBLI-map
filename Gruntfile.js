@@ -55,10 +55,6 @@ module.exports = function(grunt) {
         files: '<%= jshint.gruntfile.src %>',
         tasks: ['jshint:gruntfile']
       },
-      less: {
-        files: ['<%= yo.src %>/{,*/}*.less'],
-        tasks: ['less:dist']
-      },
       app: {
         files: [
           '<%= yo.src %>/{,*/}*.html',
@@ -88,17 +84,6 @@ module.exports = function(grunt) {
               mountFolder(connect, yoConfig.src)
             ];
           }
-        }
-      }
-    },
-    less: {
-      options: {
-        // dumpLineNumbers: 'all',
-        paths: ['<%= yo.src %>']
-      },
-      dist: {
-        files: {
-          '<%= yo.src %>/<%= yo.name %>.css': '<%= yo.src %>/<%= yo.name %>.less'
         }
       }
     },
@@ -166,6 +151,18 @@ module.exports = function(grunt) {
         src: '<%= concat.dist.dest %>',
         dest: '<%= yo.dist %>/<%= pkg.name %>.min.js'
       }
+    },
+    copy: {
+      dist: {
+        files: [
+          {
+            expand: true,
+            cwd: '<%= yo.src %>/ibli-map',
+            src: ['{,**/}*.html', '{,**/}*.csv', '{,**/}*.txt', '{,**/}*.json', '{,**/}*.scss'],
+            dest: '<%= yo.dist %>'
+          }
+        ]
+      }
     }
   });
 
@@ -176,7 +173,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('build', [
     'clean:dist',
-    'less:dist',
+    'copy:dist',
     'ngmin:dist',
     'uglify:dist'
   ]);
