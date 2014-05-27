@@ -76,7 +76,9 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
         kenya: {
           lat: 1.1864,
           lng: 37.925,
-          zoom: 7
+          zoom: 7,
+          minzoom: 4,
+          maxzoom: 10
         },
         tiles: {
           url: 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
