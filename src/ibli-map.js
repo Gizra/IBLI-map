@@ -102,9 +102,11 @@ angular
         kenya: {
           lat: 1.1864,
           lng: 37.925,
-          zoom: 7,
-          minzoom: 4,
-          maxzoom: 10
+          zoom: 7
+        },
+        defaults: {
+          minZoom: 6,
+          maxZoom: 9
         },
         tiles: {
           url: 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
@@ -114,18 +116,20 @@ angular
         },
         legend: {
           position: 'bottomleft',
-          colors: [ colors['green'], colors['yellow'], colors['orange'], colors['red'], colors['black'] ],
-          labels: [ '0%-6%', '6%-8%', '8%-10%', '10%-15%', '15%-100%' ]
-        },
-        maxbounds: {
-          southWest: {
-            lat: -3.0966358718415505,
-            lng: 33.310546875
-          },
-          northEast: {
-            lat: 5.462895560209557,
-            lng: 42.5390625
-          }
+          colors: [
+            colors['green'],
+            colors['yellow'],
+            colors['orange'],
+            colors['red'],
+            colors['black']
+          ],
+          labels: [
+            '0%-6%',
+            '6%-8%',
+            '8%-10%',
+            '10%-15%',
+            '15%-100%'
+          ]
         }
       };
     }
