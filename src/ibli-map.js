@@ -2,29 +2,8 @@
 
 angular
   .module('ibliApp', [
-    'ngCookies',
-    'ngResource',
-    'ngSanitize',
-    'ngRoute',
-    'apiMock',
     'leaflet-directive'
   ])
-  .config(function ($routeProvider, apiMockProvider) {
-    $routeProvider
-      .when('/', {
-        templateUrl: 'views/main.html',
-        controller: 'MainCtrl'
-      })
-      .otherwise({
-        redirectTo: '/'
-      });
-
-    // Add configuration of the apiMock.
-    apiMockProvider.config({
-      mockDataPath: '/data-mock/',
-      apiPath: '/'
-    });
-  })
   .constant('BACKEND_URL', 'http://127.0.0.1:9000')
   .factory('ibliHttpInterceptor', function ($q, BACKEND_URL) {
     // Public API here

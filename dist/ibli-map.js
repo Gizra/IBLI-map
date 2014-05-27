@@ -1,26 +1,5 @@
 'use strict';
-angular.module('ibliApp', [
-  'ngCookies',
-  'ngResource',
-  'ngSanitize',
-  'ngRoute',
-  'apiMock',
-  'leaflet-directive'
-]).config([
-  '$routeProvider',
-  'apiMockProvider',
-  function ($routeProvider, apiMockProvider) {
-    $routeProvider.when('/', {
-      templateUrl: 'views/main.html',
-      controller: 'MainCtrl'
-    }).otherwise({ redirectTo: '/' });
-    // Add configuration of the apiMock.
-    apiMockProvider.config({
-      mockDataPath: '/data-mock/',
-      apiPath: '/'
-    });
-  }
-]).constant('BACKEND_URL', 'http://127.0.0.1:9000').factory('ibliHttpInterceptor', [
+angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http://127.0.0.1:9000').factory('ibliHttpInterceptor', [
   '$q',
   'BACKEND_URL',
   function ($q, BACKEND_URL) {
