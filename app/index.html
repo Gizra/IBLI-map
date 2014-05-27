@@ -1,0 +1,17 @@
+<!doctype html>
+  <head>
+    <title>IBLI Map App</title>
+    <script src="angular.min.js"></script>
+    <script src="angular-leaflet-directive.js"></script>
+    <script src="leaflet.js"></script>
+    <script src="makeDrupal.js"></script>
+    <script src="../src/ibli-map.js"></script>
+    <link rel="stylesheet" href="leaflet.css" />
+    <link rel="stylesheet" href="makeDrupal.css" />
+  </head>
+  <body ng-app="ibliApp">
+    <div ng-controller="MainCtrl">
+      <leaflet center="kenya" maxbounds="maxbounds" tiles="tiles" geojson="geojson" controls="controls" legend="legend" height="600" width="600"></leaflet>
+    </div>
+  </body>
+</html>
