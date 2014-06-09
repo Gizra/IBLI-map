@@ -61,7 +61,8 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
       return {
         weight: 2,
         color: '#666666',
-        fillColor: 'white'
+        fillColor: 'white',
+        fillOpacity: 0.3
       };
     }
     /**

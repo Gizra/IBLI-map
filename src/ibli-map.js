@@ -85,7 +85,8 @@ angular
       return {
         weight: 2,
         color: '#666666',
-        fillColor: 'white'
+        fillColor: 'white',
+        fillOpacity: 0.3
       };
     }
 
