@@ -54,7 +54,7 @@ angular
       var currentMonth = date.getMonth() + 1;
 
       // Get current season, in March-September it is "LRLD", otherwise "SRSD".
-      var currentSeason = currentMonth >=3 && currentMonth <= 9 ? 'LRLD' : 'SRSD';
+      var currentSeason = currentMonth >= 3 && currentMonth <= 9 ? 'LRLD' : 'SRSD';
 
       return currentSeason;
     }
@@ -103,7 +103,7 @@ angular
         kenya: {
           lat: 1.1864,
           lng: 37.925,
-          zoom: 7
+          zoom: 6
         },
         defaults: {
           minZoom: 6,
@@ -138,19 +138,34 @@ angular
     /**
      * Get indexes keyed by division ID.
      *
+     * @param country
+     *    Country name in capital letters, i.e KENYA or ETHIOPIA.
+     *
      * @return
      *    Array of indexes keyed by division ID.
      */
-    function _getDivIdToIndex() {
+    function _getDivIdToIndex(country) {
       var path = Drupal.settings.ibli_general.iblimap_library_path;
       var deferred = $q.defer();
       $http({
         method: 'GET',
-        url: path + '/csv/indexes' + _getSeason() + '.csv',
+        url: path + '/csv/' + country + '_indexes' + _getSeason() + '.csv',
         serverPredefined: true
       }).success(function(response) {
-          divIdToIndex = response.split("\n");
-          deferred.resolve(divIdToIndex);
+          if (country == 'ETHIOPIA') {
+            // Handle Ethiopia indexes. Add 200 to each key.
+            divIdToIndex[country] = {};
+            var indexes = response.split("\n");
+            angular.forEach(indexes, function (index, key) {
+              divIdToIndex[country][key + 200] = index;
+            });
+          }
+          else {
+            // Handle Kenya indexes. Do not alter the keys.
+            divIdToIndex[country] = response.split("\n");
+          }
+
+          deferred.resolve(divIdToIndex[country]);
         });
       return deferred.promise;
     }
@@ -167,7 +182,7 @@ angular
       var deferred = $q.defer();
       $http({
         method: 'GET',
-        url: path + '/json/kenya.json',
+        url: path + '/json/kenya-ethiopia.json',
         serverPredefined: true
       }).success(function(kenyaDivisions) {
           // Prepare geoJson object with the division data.
@@ -192,7 +207,7 @@ angular
      */
     function style(feature) {
       return {
-        fillColor: getColor(feature.properties.DIV_ID),
+        fillColor: getColor(feature.properties.IBLI_ID, feature.properties.COUNTRY),
         weight: 2,
         opacity: 1,
         color: 'white',
@@ -206,13 +221,17 @@ angular
      *
      * @param divId
      *    Division ID.
+     * @param country
+     *    Country name in capital letters, i.e KENYA or ETHIOPIA.
      *
      * @return
      *    The HEX color for the division ID.
      */
-    function getColor(divId) {
-      // Get index for the given division ID.
-      var index = divIdToIndex[divId];
+    function getColor(divId, country) {
+      // Get index for the given division ID and country.
+      var index = divIdToIndex[country][divId];
+      console.log(divIdToIndex);
+
       // Get all colors.
       var colors = _getColors();
 
@@ -234,8 +253,8 @@ angular
       getHoverStyle: function () {
         return _getHoverStyle();
       },
-      getDivIdToIndex: function () {
-        return _getDivIdToIndex();
+      getDivIdToIndex: function (country) {
+        return _getDivIdToIndex(country);
       },
       getGeoJson: function () {
         return _getGeoJson();
@@ -244,17 +263,24 @@ angular
   })
   .controller('MainCtrl', function ($scope, $http, $compile, ibliData) {
 
+    $scope.divIdToIndex = {};
+
     // Set map options.
     angular.extend($scope, ibliData.getMapOptions());
 
-    // Get divIdToIndex data.
-    ibliData.getDivIdToIndex().then(function(data) {
-      $scope.divIdToIndex = data;
+    // Get divIdToIndex data for Kenya.
+    ibliData.getDivIdToIndex('KENYA').then(function(data) {
+      $scope.divIdToIndex['KENYA'] = data;
 
-      // Get geoJson data. We do this here because we need the divIdToIndex
-      // data to be available for the geoJson to work properly.
-      ibliData.getGeoJson().then(function(data) {
-        $scope.geojson = data;
+      // Get divIdToIndex data for Ethiopia.
+      ibliData.getDivIdToIndex('ETHIOPIA').then(function(data) {
+        $scope.divIdToIndex['ETHIOPIA'] = data;
+
+        // Get geoJson data. We do this here because we need the divIdToIndex
+        // data to be available for the geoJson to work properly.
+        ibliData.getGeoJson().then(function(data) {
+          $scope.geojson = data;
+        });
       });
     });
 
