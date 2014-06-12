@@ -115,6 +115,16 @@ angular
             id: 'v3/examples.map-20v6611k'
           }
         },
+        maxbounds: {
+          southWest:{
+            lat: -2.3613917533090936,
+            lng: 31.662597656249996
+          },
+          northEast:{
+            lat: 3.984820817420321,
+            lng: 44.703369140625
+          }
+        },
         legend: {
           position: 'bottomleft',
           colors: [
