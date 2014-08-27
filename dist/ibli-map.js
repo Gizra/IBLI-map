@@ -232,14 +232,14 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
       });
     });
 
-    $scope.nextSalesWindow = ibliData.getSeason() == 'LRLD' ? 'March' : 'October';
+    $scope.nextSalesWindow = ibliData.getSeason() == 'LRLD' ? 'Aug/Sept' : 'Jan/Feb';
     $scope.nextPayout = ibliData.getSeason() == 'LRLD' ? 'March' : 'October';
 
     // Custom control for displaying name of division and percent on hover.
     $scope.controls = { custom: [] };
     var hoverInfoControl = L.control();
     hoverInfoControl.onAdd = function () {
-      return $compile(angular.element('<hover-info></hover-info>'))($scope)[0];
+      return $compile(angular.element('<hover-info ng-show="geojson.selected"></hover-info>'))($scope)[0];
     };
     $scope.controls.custom.push(hoverInfoControl);
     // When hovering a division, color it white.

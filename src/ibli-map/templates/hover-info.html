@@ -1,9 +1,26 @@
 <div class="division-hover-info">
-  <div ng-show="geojson.selected">
+  <div>
     <strong>{{ geojson.selected.properties.DIVISION }}</strong>
-    {{ divIdToIndex[geojson.selected.properties.DIV_ID] * 100 | number:2 }}%
-  </div>
-  <div ng-hide="geojson.selected">
-    &nbsp;
+    <dl>
+      <dt>Premium Rate:</dt>
+      <dd>{{ divIdToIndex[geojson.selected.properties.DIV_ID] * 100 | number:2 }}%</dd>
+
+      <dt>Next Sales Window:</dt>
+      <dd>{{ nextSalesWindow }}</dd>
+
+      <dt>Next Potential Payout:</dt>
+      <dd>{{ nextPayout }}</dd>
+
+      <dt>Insurer:</dt>
+      <dd class="insurers">
+        <span ng-show="geojson.selected.properties.DISTRICT == 'WAJIR' || geojson.selected.properties.DISTRICT == 'ISIOLO' || geojson.selected.properties.DISTRICT == 'MANDERA' || geojson.selected.properties.DISTRICT == 'GARISSA'">
+          <a href="http://www.takafulafrica.com/">Takaful</a>
+        </span>
+        <span ng-show="geojson.selected.properties.DISTRICT == 'ISIOLO'">|</span>
+        <span ng-show="geojson.selected.properties.DISTRICT == 'ISIOLO' || geojson.selected.properties.DISTRICT == 'MARSABIT'">
+          <a href="http://www.apainsurance.org/">APA</a>
+        </span>
+      </dd>
+    </dl>
   </div>
 </div>

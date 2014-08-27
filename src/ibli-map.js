@@ -84,9 +84,7 @@ angular
     function _getHoverStyle() {
       return {
         weight: 2,
-        color: '#666666',
-        fillColor: 'white',
-        fillOpacity: 0.3
+        fillOpacity: 0.2
       };
     }
 
@@ -207,7 +205,7 @@ angular
         opacity: 1,
         color: 'white',
         dashArray: '3',
-        fillOpacity: 0.7
+        fillOpacity: 0.6
       };
     }
 
@@ -268,6 +266,9 @@ angular
       });
     });
 
+    $scope.nextSalesWindow = ibliData.getSeason() == 'LRLD' ? 'Aug/Sept' : 'Jan/Feb';
+    $scope.nextPayout = ibliData.getSeason() == 'LRLD' ? 'March' : 'October';
+
     // Custom control for displaying name of division and percent on hover.
     $scope.controls = {
       custom: []
@@ -275,7 +276,7 @@ angular
     var hoverInfoControl = L.control();
     hoverInfoControl.setPosition('bottomleft');
     hoverInfoControl.onAdd = function () {
-      return $compile(angular.element('<hover-info></hover-info>'))($scope)[0];
+      return $compile(angular.element('<hover-info ng-show="geojson.selected"></hover-info>'))($scope)[0];
     };
     $scope.controls.custom.push(hoverInfoControl);
 
