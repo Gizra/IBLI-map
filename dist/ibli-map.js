@@ -209,7 +209,7 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
       getGeoJson: function () {
         return _getGeoJson();
       },
-      getSeason: function() {
+      getSeason: function () {
         return _getSeason();
       }
     };
@@ -222,6 +222,19 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
   function ($scope, $http, $compile, ibliData) {
     // Set map options.
     angular.extend($scope, ibliData.getMapOptions());
+    // Set marker potions.
+    angular.extend($scope, {
+      markers: {
+        kenya: {
+          lat: 1.1864,
+          lng: 37.925,
+          message: '<hover-info ng-show="geojson.selected"></hover-info>',
+          focus: true,
+          draggable: false
+        }
+      },
+      defaults: { scrollWheelZoom: true }
+    });
     // Get divIdToIndex data.
     ibliData.getDivIdToIndex().then(function (data) {
       $scope.divIdToIndex = data;
@@ -231,17 +244,10 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
         $scope.geojson = data;
       });
     });
-
     $scope.nextSalesWindow = ibliData.getSeason() == 'LRLD' ? 'Aug/Sept' : 'Jan/Feb';
     $scope.nextPayout = ibliData.getSeason() == 'LRLD' ? 'March' : 'October';
-
     // Custom control for displaying name of division and percent on hover.
     $scope.controls = { custom: [] };
-    var hoverInfoControl = L.control();
-    hoverInfoControl.onAdd = function () {
-      return $compile(angular.element('<hover-info ng-show="geojson.selected"></hover-info>'))($scope)[0];
-    };
-    $scope.controls.custom.push(hoverInfoControl);
     // When hovering a division, color it white.
     $scope.$on('leafletDirectiveMap.geojsonMouseover', function (ev, leafletEvent) {
       var layer = leafletEvent.target;
