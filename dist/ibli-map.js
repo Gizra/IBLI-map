@@ -125,6 +125,9 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
         var csv = response;
         var rows = csv.split('\n');
         for (var i in rows) {
+          if (!rows[i]) {
+            continue;
+          }
           rows[i] = rows[i].split(',');
         }
         var headers = rows.shift();
@@ -138,9 +141,12 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
           indices[headers[column]] = [];
           // Add the values from all rows to each index.
           rows.forEach(function (row) {
-            indices[headers[column]].push(parseInt(row[column]));
+            var unitId = parseInt(row[0]);
+            var index = parseInt(row[column]);
+            indices[headers[column]][unitId] = index;
           });
         }
+
         divIdToIndex = indices['2013S'];
         deferred.resolve(divIdToIndex);
       });
