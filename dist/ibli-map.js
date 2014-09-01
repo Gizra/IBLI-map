@@ -43,13 +43,13 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
      *    Array of HEX colors, keyed by the color's name.
      */
     function _getColors() {
-      return {
-        green: '#00AA00',
-        yellow: '#DDDD00',
-        orange: '#BB5500',
-        red: '#AA0000',
-        black: '#000000'
-      };
+      return [
+        '#00AA00',
+        '#DDDD00',
+        '#BB5500',
+        '#AA0000',
+        '#000000'
+      ];
     }
     /**
      * Get style to apply when hovering a division.
@@ -72,7 +72,6 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
      *    Object of map-related options, used for extending the scope.
      */
     function _getMapOptions() {
-      var colors = _getColors();
       return {
         kenya: {
           lat: 1.1864,
@@ -99,13 +98,7 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
         },
         legend: {
           position: 'bottomleft',
-          colors: [
-            colors['green'],
-            colors['yellow'],
-            colors['orange'],
-            colors['red'],
-            colors['black']
-          ],
+          colors: _getColors(),
           labels: [
             '0%-6%',
             '6%-8%',
@@ -123,14 +116,32 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
      *    Array of indexes keyed by division ID.
      */
     function _getDivIdToIndex() {
-      var path = Drupal.settings.ibli_general.iblimap_library_path;
       var deferred = $q.defer();
       $http({
         method: 'GET',
-        url: path + '/csv/indexes' + _getSeason() + '.csv',
+        url: 'sites/default/files/data/zCumNDVI_Percentile.csv',
         serverPredefined: true
       }).success(function (response) {
-        divIdToIndex = response.split('\n');
+        var csv = response;
+        var rows = csv.split('\n');
+        for (var i in rows) {
+          rows[i] = rows[i].split(',');
+        }
+        var headers = rows.shift();
+        var indices = [];
+        // Add each column as an array.
+        for (var column in headers) {
+          // Match the index columns (Like "2013S").
+          if (!headers[column].match(/\d{4}[L|S]/)) {
+            continue;
+          }
+          indices[headers[column]] = [];
+          // Add the values from all rows to each index.
+          rows.forEach(function (row) {
+            indices[headers[column]].push(parseInt(row[column]));
+          });
+        }
+        divIdToIndex = indices['2013S'];
         deferred.resolve(divIdToIndex);
       });
       return deferred.promise;
@@ -191,11 +202,8 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
     function getColor(divId) {
       // Get index for the given division ID.
       var index = divIdToIndex[divId];
-      // Get all colors.
       var colors = _getColors();
-      // Get color according to the index.
-      var color = index < 0.06 ? colors['green'] : index < 0.08 ? colors['yellow'] : index < 0.1 ? colors['orange'] : index < 0.15 ? colors['red'] : colors['black'];
-      return color;
+      return colors[index - 1];
     }
     // Public API here
     return {
