@@ -245,7 +245,6 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
       $scope.periods = data;
       // Set default period to the latest one.
       if ($scope.period == undefined) {
-        console.log();
         $scope.period = $scope.periods[$scope.periods.length - 1];
       }
       // Get geoJson data. We do this here because we need the divIdToIndex

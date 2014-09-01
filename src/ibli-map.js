@@ -283,7 +283,6 @@ angular
 
       // Set default period to the latest one.
       if ($scope.period == undefined) {
-        console.log();
         $scope.period = $scope.periods[$scope.periods.length - 1];
       }
 
