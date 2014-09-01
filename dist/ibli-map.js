@@ -115,7 +115,7 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
      * @return
      *    Array of indexes keyed by division ID.
      */
-    function _getDivIdToIndex() {
+    function _getDivIdToIndex(period) {
       var deferred = $q.defer();
       $http({
         method: 'GET',
@@ -131,6 +131,7 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
           rows[i] = rows[i].split(',');
         }
         var headers = rows.shift();
+        var periods = [];
         var indices = [];
         // Add each column as an array.
         for (var column in headers) {
@@ -138,6 +139,7 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
           if (!headers[column].match(/\d{4}[L|S]/)) {
             continue;
           }
+          periods.push(headers[column]);
           indices[headers[column]] = [];
           // Add the values from all rows to each index.
           rows.forEach(function (row) {
@@ -146,9 +148,12 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
             indices[headers[column]][unitId] = index;
           });
         }
-
-        divIdToIndex = indices['2013S'];
-        deferred.resolve(divIdToIndex);
+        // Show by default the latest period.
+        if (!period) {
+          period = periods[periods.length - 1];
+        }
+        divIdToIndex = indices[period];
+        deferred.resolve(periods);
       });
       return deferred.promise;
     }
@@ -219,8 +224,8 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
       getHoverStyle: function () {
         return _getHoverStyle();
       },
-      getDivIdToIndex: function () {
-        return _getDivIdToIndex();
+      getDivIdToIndex: function (period) {
+        return _getDivIdToIndex(period);
       },
       getGeoJson: function () {
         return _getGeoJson();
@@ -237,7 +242,12 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
     angular.extend($scope, ibliData.getMapOptions());
     // Get divIdToIndex data.
     ibliData.getDivIdToIndex().then(function (data) {
-      $scope.divIdToIndex = data;
+      $scope.periods = data;
+      // Set default period to the latest one.
+      if ($scope.period == undefined) {
+        console.log();
+        $scope.period = $scope.periods[$scope.periods.length - 1];
+      }
       // Get geoJson data. We do this here because we need the divIdToIndex
       // data to be available for the geoJson to work properly.
       ibliData.getGeoJson().then(function (data) {
@@ -252,11 +262,26 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
       return $compile(angular.element('<hover-info></hover-info>'))($scope)[0];
     };
     $scope.controls.custom.push(hoverInfoControl);
+    var periodSelect = L.control();
+    periodSelect.setPosition('topright');
+    periodSelect.onAdd = function () {
+      return $compile(angular.element('<select ng-model="period" ng-options="period for period in periods"></select>'))($scope)[0];
+    };
+    $scope.controls.custom.push(periodSelect);
     // When hovering a division, color it white.
     $scope.$on('leafletDirectiveMap.geojsonMouseover', function (ev, leafletEvent) {
       var layer = leafletEvent.target;
       layer.setStyle(ibliData.getHoverStyle());
       layer.bringToFront();
+    });
+    // Reload the map when the period is changed.
+    // TODO: Update the map without reloading the geoJson file.
+    $scope.$watch('period', function () {
+      ibliData.getDivIdToIndex($scope.period).then(function (data) {
+        ibliData.getGeoJson().then(function (data) {
+          $scope.geojson = data;
+        });
+      });
     });
   }
 ]).directive('hoverInfo', function () {

@@ -143,21 +143,24 @@ angular
      * @return
      *    Array of indexes keyed by division ID.
      */
-    function _getDivIdToIndex() {
+    function _getDivIdToIndex(period) {
       var deferred = $q.defer();
       $http({
         method: 'GET',
         url: 'sites/default/files/data/zCumNDVI_Percentile.csv',
         serverPredefined: true
       }).success(function (response) {
-
         var csv = response;
         var rows = csv.split('\n');
         for (var i in rows) {
+          if (!rows[i]) {
+            continue;
+          }
           rows[i] = rows[i].split(',');
         }
         var headers = rows.shift();
 
+        var periods = [];
         var indices = [];
         // Add each column as an array.
         for (var column in headers) {
@@ -166,15 +169,25 @@ angular
             continue;
           }
 
+          periods.push(headers[column]);
+
           indices[headers[column]] = [];
           // Add the values from all rows to each index.
-          rows.forEach(function(row) {
-            indices[headers[column]].push(parseInt(row[column]));
+          rows.forEach(function (row) {
+            var unitId = parseInt(row[0]);
+            var index = parseInt(row[column]);
+            indices[headers[column]][unitId] = index;
           });
         }
 
-        divIdToIndex = indices['2013S'];
-        deferred.resolve(divIdToIndex);
+        // Show by default the latest period.
+        if (!period) {
+          period = periods[periods.length - 1];
+        }
+
+        divIdToIndex = indices[period];
+
+        deferred.resolve(periods);
       });
       return deferred.promise;
     }
@@ -250,8 +263,8 @@ angular
       getHoverStyle: function () {
         return _getHoverStyle();
       },
-      getDivIdToIndex: function () {
-        return _getDivIdToIndex();
+      getDivIdToIndex: function (period) {
+        return _getDivIdToIndex(period);
       },
       getGeoJson: function () {
         return _getGeoJson();
@@ -264,12 +277,19 @@ angular
     angular.extend($scope, ibliData.getMapOptions());
 
     // Get divIdToIndex data.
-    ibliData.getDivIdToIndex().then(function(data) {
-      $scope.divIdToIndex = data;
+    ibliData.getDivIdToIndex().then(function (data) {
+
+      $scope.periods = data;
+
+      // Set default period to the latest one.
+      if ($scope.period == undefined) {
+        console.log();
+        $scope.period = $scope.periods[$scope.periods.length - 1];
+      }
 
       // Get geoJson data. We do this here because we need the divIdToIndex
       // data to be available for the geoJson to work properly.
-      ibliData.getGeoJson().then(function(data) {
+      ibliData.getGeoJson().then(function (data) {
         $scope.geojson = data;
       });
     });
@@ -278,12 +298,21 @@ angular
     $scope.controls = {
       custom: []
     };
+
     var hoverInfoControl = L.control();
     hoverInfoControl.setPosition('bottomleft');
     hoverInfoControl.onAdd = function () {
       return $compile(angular.element('<hover-info></hover-info>'))($scope)[0];
     };
     $scope.controls.custom.push(hoverInfoControl);
+
+    var periodSelect = L.control();
+    periodSelect.setPosition('topright');
+    periodSelect.onAdd = function () {
+      return $compile(angular.element('<select ng-model="period" ng-options="period for period in periods"></select>'))($scope)[0];
+    };
+    $scope.controls.custom.push(periodSelect);
+
 
     // When hovering a division, color it white.
     $scope.$on("leafletDirectiveMap.geojsonMouseover", function(ev, leafletEvent) {
@@ -292,6 +321,16 @@ angular
       layer.bringToFront();
     });
 
+
+    // Reload the map when the period is changed.
+    // TODO: Update the map without reloading the geoJson file.
+    $scope.$watch('period', function() {
+      ibliData.getDivIdToIndex($scope.period).then(function (data) {
+        ibliData.getGeoJson().then(function (data) {
+          $scope.geojson = data;
+        });
+      });
+    });
   })
   .directive('hoverInfo', function () {
     var path = Drupal.settings.ibli_general.iblimap_library_path;
