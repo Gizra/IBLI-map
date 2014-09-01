@@ -281,14 +281,34 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
       var layer = leafletEvent.target;
       layer.setStyle(ibliData.getHoverStyle());
       layer.bringToFront();
-      var latLng = layer.feature.properties;
+      var district = '';
+      var properties = layer.feature.properties;
       var marker = $scope.markers.kenya;
-      marker.lat = latLng.Y;
-      marker.lng = latLng.X;
+      switch (properties.DISTRICT) {
+      case 'WAJIR':
+      case 'MANDERA':
+      case 'GARISSA':
+        district = '<a href="http://www.takafulafrica.com/">Takaful</a>';
+        break;
+      case 'ISIOLO':
+        district = '<a href="http://www.takafulafrica.com/">Takaful</a> | <a href="http://www.apainsurance.org/">APA</a>';
+        break;
+      case 'MARSABIT':
+        district = '<a href="http://www.apainsurance.org/">APA</a>';
+        break;
+      case 'MOYALE':
+      case 'IJARA':
+      case 'TANA RIVER':
+      case 'SAMBURU':
+      case 'BARINGO':
+      case 'TURKANA':
+        district = 'TBD';
+        break;
+      }
+      marker.lat = properties.Y;
+      marker.lng = properties.X;
+      marker.message = '<div>' + '<strong>' + properties.DIVISION + '</strong>' + '<dl>' + '<dt>Next Sales Window:</dt>' + '<dd>' + $scope.nextSalesWindow + '</dd>' + '<dt>Next Potential Payout:</dt>' + '<dd>' + $scope.nextPayout + '</dd>' + '<dt>Insurer:</dt>' + '<dd class="insurers">' + district + '</dd>' + '</dl>' + '</div>';
       marker.focus = true;
-    });
-    // When exiting hovering a division.
-    $scope.$on('leafletDirectiveMap.geojsonMouseout', function (ev, leafletEvent) {
     });
     // Reload the map when the period is changed.
     // TODO: Update the map without reloading the geoJson file.
@@ -299,19 +319,5 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
         });
       });
     });
-  }
-]).directive('hoverInfo', [
-  '$compile',
-  function ($compile) {
-    var path = Drupal.settings.ibli_general.iblimap_library_path;
-    return {
-      scope: { markers: '=' },
-      templateUrl: path + '/templates/hover-info.html',
-      restrict: 'AEC',
-      link: function (scope, element, attrs) {
-        element.append('<hover-info></hover-info>');
-        $compile(element.contents())(scope.markers.kenya.message);
-      }
-    };
   }
 ]);
