@@ -66,13 +66,13 @@ angular
      *    Array of HEX colors, keyed by the color's name.
      */
     function _getColors() {
-      return {
-        green:  '#00AA00',
-        yellow: '#DDDD00',
-        orange: '#BB5500',
-        red:    '#AA0000',
-        black:  '#000000'
-      };
+      return [
+        '#00AA00',
+        '#DDDD00',
+        '#BB5500',
+        '#AA0000',
+        '#000000'
+      ];
     }
 
     /**
@@ -95,8 +95,6 @@ angular
      *    Object of map-related options, used for extending the scope.
      */
     function _getMapOptions() {
-      var colors = _getColors();
-
       return {
         kenya: {
           lat: 1.1864,
@@ -125,13 +123,7 @@ angular
         },
         legend: {
           position: 'bottomleft',
-          colors: [
-            colors['green'],
-            colors['yellow'],
-            colors['orange'],
-            colors['red'],
-            colors['black']
-          ],
+          colors: _getColors(),
           labels: [
             '0%-6%',
             '6%-8%',
@@ -149,17 +141,52 @@ angular
      * @return
      *    Array of indexes keyed by division ID.
      */
-    function _getDivIdToIndex() {
-      var path = Drupal.settings.ibli_general.iblimap_library_path;
+    function _getDivIdToIndex(period) {
       var deferred = $q.defer();
       $http({
         method: 'GET',
-        url: path + '/csv/indexes' + _getSeason() + '.csv',
+        url: 'sites/default/files/data/zCumNDVI_Percentile.csv',
         serverPredefined: true
-      }).success(function(response) {
-          divIdToIndex = response.split("\n");
-          deferred.resolve(divIdToIndex);
-        });
+      }).success(function (response) {
+        var csv = response;
+        var rows = csv.split('\n');
+        for (var i in rows) {
+          if (!rows[i]) {
+            continue;
+          }
+          rows[i] = rows[i].split(',');
+        }
+        var headers = rows.shift();
+
+        var periods = [];
+        var indices = [];
+        // Add each column as an array.
+        for (var column in headers) {
+          // Match the index columns (Like "2013S").
+          if (!headers[column].match(/\d{4}[L|S]/)) {
+            continue;
+          }
+
+          periods.push(headers[column]);
+
+          indices[headers[column]] = [];
+          // Add the values from all rows to each index.
+          rows.forEach(function (row) {
+            var unitId = parseInt(row[0]);
+            var index = parseInt(row[column]);
+            indices[headers[column]][unitId] = index;
+          });
+        }
+
+        // Show by default the latest period.
+        if (!period) {
+          period = periods[periods.length - 1];
+        }
+
+        divIdToIndex = indices[period];
+
+        deferred.resolve(periods);
+      });
       return deferred.promise;
     }
 
@@ -221,17 +248,9 @@ angular
     function getColor(divId) {
       // Get index for the given division ID.
       var index = divIdToIndex[divId];
-      // Get all colors.
       var colors = _getColors();
 
-      // Get color according to the index.
-      var color = index < 0.06 ? colors['green'] :
-        index < 0.08 ? colors['yellow'] :
-          index < 0.10 ? colors['orange'] :
-            index < 0.15 ? colors['red'] :
-              colors['black'];
-
-      return color;
+      return colors[index - 1];
     }
 
     // Public API here
@@ -242,8 +261,8 @@ angular
       getHoverStyle: function () {
         return _getHoverStyle();
       },
-      getDivIdToIndex: function () {
-        return _getDivIdToIndex();
+      getDivIdToIndex: function (period) {
+        return _getDivIdToIndex(period);
       },
       getGeoJson: function () {
         return _getGeoJson();
@@ -270,19 +289,25 @@ angular
         }
       },
       defaults: {
-        scrollWheelZoom: true
+        scrollWheelZoom: false
       }
     },
     ibliData.getMapOptions()
     );
 
     // Get divIdToIndex data.
-    ibliData.getDivIdToIndex().then(function(data) {
-      $scope.divIdToIndex = data;
+    ibliData.getDivIdToIndex().then(function (data) {
+
+      $scope.periods = data;
+
+      // Set default period to the latest one.
+      if ($scope.period == undefined) {
+        $scope.period = $scope.periods[$scope.periods.length - 1];
+      }
 
       // Get geoJson data. We do this here because we need the divIdToIndex
       // data to be available for the geoJson to work properly.
-      ibliData.getGeoJson().then(function(data) {
+      ibliData.getGeoJson().then(function (data) {
         $scope.geojson = data;
       });
     });
@@ -290,6 +315,12 @@ angular
     $scope.nextSalesWindow = ibliData.getSeason() == 'LRLD' ? 'Aug/Sept' : 'Jan/Feb';
     $scope.nextPayout = ibliData.getSeason() == 'LRLD' ? 'March' : 'October';
 
+    var periodSelect = L.control();
+    periodSelect.setPosition('topright');
+    periodSelect.onAdd = function () {
+      return $compile(angular.element('<select ng-model="period" ng-options="period for period in periods"></select>'))($scope)[0];
+    };
+    $scope.controls.custom.push(periodSelect);
 
     // When hovering a division.
     $scope.$on("leafletDirectiveMap.geojsonMouseover", function(ev, leafletEvent) {
@@ -308,6 +339,16 @@ angular
       //$scope.markers.kenya.focus = false;
     });
 
+
+    // Reload the map when the period is changed.
+    // TODO: Update the map without reloading the geoJson file.
+    $scope.$watch('period', function() {
+      ibliData.getDivIdToIndex($scope.period).then(function (data) {
+        ibliData.getGeoJson().then(function (data) {
+          $scope.geojson = data;
+        });
+      });
+    });
   })
   .directive('hoverInfo',  function ($compile) {
     var path = Drupal.settings.ibli_general.iblimap_library_path;
