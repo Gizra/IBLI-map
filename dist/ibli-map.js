@@ -230,7 +230,7 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
           lat: 1.1864,
           lng: 37.925,
           message: '',
-          focus: true,
+          focus: false,
           draggable: false
         }
       },
@@ -247,18 +247,33 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
     });
     $scope.nextSalesWindow = ibliData.getSeason() == 'LRLD' ? 'Aug/Sept' : 'Jan/Feb';
     $scope.nextPayout = ibliData.getSeason() == 'LRLD' ? 'March' : 'October';
-    // When hovering a division, color it white.
+    // When hovering a division.
     $scope.$on('leafletDirectiveMap.geojsonMouseover', function (ev, leafletEvent) {
       var layer = leafletEvent.target;
       layer.setStyle(ibliData.getHoverStyle());
       layer.bringToFront();
-      $log.log($scope.getLatlng());
+      var latLng = layer.feature.properties;
+      var marker = $scope.markers.kenya;
+      marker.lat = latLng.Y;
+      marker.lng = latLng.X;
+      marker.focus = true;
+    });
+    // When exiting hovering a division.
+    $scope.$on('leafletDirectiveMap.geojsonMouseout', function (ev, leafletEvent) {
     });
   }
-]).directive('hoverInfo', function () {
-  var path = Drupal.settings.ibli_general.iblimap_library_path;
-  return {
-    templateUrl: path + '/templates/hover-info.html',
-    restrict: 'AEC'
-  };
-});
+]).directive('hoverInfo', [
+  '$compile',
+  function ($compile) {
+    var path = Drupal.settings.ibli_general.iblimap_library_path;
+    return {
+      scope: { markers: '=' },
+      templateUrl: path + '/templates/hover-info.html',
+      restrict: 'AEC',
+      link: function (scope, element, attrs) {
+        element.append('<hover-info></hover-info>');
+        $compile(element.contents())(scope.markers.kenya.message);
+      }
+    };
+  }
+]);

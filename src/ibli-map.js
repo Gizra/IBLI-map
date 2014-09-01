@@ -256,9 +256,7 @@ angular
   .controller('MainCtrl', function ($scope, $http, $compile, ibliData, $log) {
 
     // Custom control for displaying name of division and percent on hover.
-    $scope.controls = {
-      custom: []
-    };
+    $scope.controls = { custom: [] };
 
     // Set marker potions.
     angular.extend($scope, {
@@ -267,7 +265,7 @@ angular
           lat: 1.1864,
           lng: 37.925,
           message: '',
-          focus: true,
+          focus: false,
           draggable: false
         }
       },
@@ -293,18 +291,35 @@ angular
     $scope.nextPayout = ibliData.getSeason() == 'LRLD' ? 'March' : 'October';
 
 
-    // When hovering a division, color it white.
+    // When hovering a division.
     $scope.$on("leafletDirectiveMap.geojsonMouseover", function(ev, leafletEvent) {
       var layer = leafletEvent.target;
       layer.setStyle(ibliData.getHoverStyle());
       layer.bringToFront();
+      var latLng = layer.feature.properties;
+      var marker = $scope.markers.kenya;
+      marker.lat = latLng.Y;
+      marker.lng = latLng.X;
+      marker.focus = true;
+    });
+
+    // When exiting hovering a division.
+    $scope.$on("leafletDirectiveMap.geojsonMouseout", function(ev, leafletEvent) {
+      //$scope.markers.kenya.focus = false;
     });
 
   })
-  .directive('hoverInfo', function () {
+  .directive('hoverInfo',  function ($compile) {
     var path = Drupal.settings.ibli_general.iblimap_library_path;
     return {
+      scope: {
+        markers: '='
+      },
       templateUrl: path + '/templates/hover-info.html',
-      restrict: 'AEC'
+      restrict: 'AEC',
+      link: function(scope, element, attrs) {
+        element.append("<hover-info></hover-info>");
+        $compile(element.contents())(scope.markers.kenya.message);
+      }
     };
   });
