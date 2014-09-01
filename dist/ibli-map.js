@@ -60,9 +60,7 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
     function _getHoverStyle() {
       return {
         weight: 2,
-        color: '#666666',
-        fillColor: 'white',
-        fillOpacity: 0.3
+        fillOpacity: 0.2
       };
     }
     /**
@@ -198,7 +196,7 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
         opacity: 1,
         color: 'white',
         dashArray: '3',
-        fillOpacity: 0.7
+        fillOpacity: 0.6
       };
     }
     /**
@@ -229,6 +227,9 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
       },
       getGeoJson: function () {
         return _getGeoJson();
+      },
+      getSeason: function () {
+        return _getSeason();
       }
     };
   }
@@ -237,9 +238,23 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
   '$http',
   '$compile',
   'ibliData',
-  function ($scope, $http, $compile, ibliData) {
-    // Set map options.
-    angular.extend($scope, ibliData.getMapOptions());
+  '$log',
+  function ($scope, $http, $compile, ibliData, $log) {
+    // Custom control for displaying name of division and percent on hover.
+    $scope.controls = { custom: [] };
+    // Set marker potions.
+    angular.extend($scope, {
+      markers: {
+        kenya: {
+          lat: 1.1864,
+          lng: 37.925,
+          message: '',
+          focus: false,
+          draggable: false
+        }
+      },
+      defaults: { scrollWheelZoom: false }
+    }, ibliData.getMapOptions());
     // Get divIdToIndex data.
     ibliData.getDivIdToIndex().then(function (data) {
       $scope.periods = data;
@@ -253,25 +268,47 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
         $scope.geojson = data;
       });
     });
-    // Custom control for displaying name of division and percent on hover.
-    $scope.controls = { custom: [] };
-    var hoverInfoControl = L.control();
-    hoverInfoControl.setPosition('bottomleft');
-    hoverInfoControl.onAdd = function () {
-      return $compile(angular.element('<hover-info></hover-info>'))($scope)[0];
-    };
-    $scope.controls.custom.push(hoverInfoControl);
+    $scope.nextSalesWindow = ibliData.getSeason() == 'LRLD' ? 'Aug/Sept' : 'Jan/Feb';
+    $scope.nextPayout = ibliData.getSeason() == 'LRLD' ? 'March' : 'October';
     var periodSelect = L.control();
     periodSelect.setPosition('topright');
     periodSelect.onAdd = function () {
       return $compile(angular.element('<select ng-model="period" ng-options="period for period in periods"></select>'))($scope)[0];
     };
     $scope.controls.custom.push(periodSelect);
-    // When hovering a division, color it white.
+    // When hovering a division.
     $scope.$on('leafletDirectiveMap.geojsonMouseover', function (ev, leafletEvent) {
       var layer = leafletEvent.target;
       layer.setStyle(ibliData.getHoverStyle());
       layer.bringToFront();
+      var district = '';
+      var properties = layer.feature.properties;
+      var marker = $scope.markers.kenya;
+      switch (properties.DISTRICT) {
+      case 'WAJIR':
+      case 'MANDERA':
+      case 'GARISSA':
+        district = '<a href="http://www.takafulafrica.com/">Takaful</a>';
+        break;
+      case 'ISIOLO':
+        district = '<a href="http://www.takafulafrica.com/">Takaful</a> | <a href="http://www.apainsurance.org/">APA</a>';
+        break;
+      case 'MARSABIT':
+        district = '<a href="http://www.apainsurance.org/">APA</a>';
+        break;
+      case 'MOYALE':
+      case 'IJARA':
+      case 'TANA RIVER':
+      case 'SAMBURU':
+      case 'BARINGO':
+      case 'TURKANA':
+        district = 'TBD';
+        break;
+      }
+      marker.lat = properties.Y;
+      marker.lng = properties.X;
+      marker.message = '<div>' + '<strong>' + properties.DIVISION + '</strong>' + '<dl>' + '<dt>Next Sales Window:</dt>' + '<dd>' + $scope.nextSalesWindow + '</dd>' + '<dt>Next Potential Payout:</dt>' + '<dd>' + $scope.nextPayout + '</dd>' + '<dt>Insurer:</dt>' + '<dd class="insurers">' + district + '</dd>' + '</dl>' + '</div>';
+      marker.focus = true;
     });
     // Reload the map when the period is changed.
     // TODO: Update the map without reloading the geoJson file.
@@ -283,10 +320,4 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
       });
     });
   }
-]).directive('hoverInfo', function () {
-  var path = Drupal.settings.ibli_general.iblimap_library_path;
-  return {
-    templateUrl: path + '/templates/hover-info.html',
-    restrict: 'AEC'
-  };
-});
+]);

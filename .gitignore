@@ -1,5 +1,5 @@
 node_modules
-bower_components
+app/_bower_components
 .tmp
 .sass-cache
 .idea
