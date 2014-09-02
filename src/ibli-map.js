@@ -54,7 +54,7 @@ angular
       var currentMonth = date.getMonth() + 1;
 
       // Get current season, in March-September it is "LRLD", otherwise "SRSD".
-      var currentSeason = currentMonth >=3 && currentMonth <= 9 ? 'LRLD' : 'SRSD';
+      var currentSeason = currentMonth >= 3 && currentMonth <= 9 ? 'LRLD' : 'SRSD';
 
       return currentSeason;
     }
@@ -96,10 +96,10 @@ angular
      */
     function _getMapOptions() {
       return {
-        kenya: {
+        center: {
           lat: 1.1864,
           lng: 37.925,
-          zoom: 7
+          zoom: 6
         },
         defaults: {
           minZoom: 6,
@@ -195,10 +195,10 @@ angular
         method: 'GET',
         url: 'sites/default/files/data/KenyaEthiopia_IBLIunits_July2014.geojson',
         serverPredefined: true
-      }).success(function(kenyaDivisions) {
+      }).success(function(kenyaEthiopiaDivisions) {
         // Prepare geoJson object with the division data.
         var geojsonObject = {
-          data: kenyaDivisions,
+          data: kenyaEthiopiaDivisions,
           style: style,
           resetStyleOnMouseout: true
         };
@@ -218,7 +218,7 @@ angular
      */
     function style(feature) {
       return {
-        fillColor: getColor(feature.properties.DIV_ID),
+        fillColor: getColor(feature.properties.IBLI_ID),
         weight: 2,
         opacity: 1,
         color: 'white',
@@ -319,6 +319,7 @@ angular
       layer.setStyle(ibliData.getHoverStyle());
       layer.bringToFront();
       var district = '';
+      var latLng = leafletEvent.latlng;
       var properties = layer.feature.properties;
       var marker = $scope.markers.kenya;
       marker.focus = false;
@@ -343,22 +344,22 @@ angular
           district = 'TBD';
           break;
       }
-      marker.lat = properties.Y;
-      marker.lng = properties.X;
+      marker.lat = latLng.lat;
+      marker.lng = latLng.lng;
       marker.message =
         '<div>' +
-        '<strong>' + properties.DIVISION + '</strong>'+
-        '<dl>' +
-          '<dt>Next Sales Window:</dt>' +
-          '<dd>' + $scope.nextSalesWindow + '</dd>' +
-          '<dt>Next Potential Payout:</dt>' +
-          '<dd>' + $scope.nextPayout + '</dd>' +
-          '<dt>Insurer:</dt>' +
-          '<dd class="insurers">' +
-            district +
-          '</dd>' +
-        '</dl>' +
-      '</div>';
+            '<strong>' + properties.DIVI_WOR + '</strong>'+
+          '<dl>' +
+            '<dt>Next Sales Window:</dt>' +
+            '<dd>' + $scope.nextSalesWindow + '</dd>' +
+            '<dt>Next Potential Payout:</dt>' +
+            '<dd>' + $scope.nextPayout + '</dd>' +
+            '<dt>Insurer:</dt>' +
+            '<dd class="insurers">' +
+              district +
+            '</dd>' +
+          '</dl>' +
+        '</div>';
       $timeout(function() {
         marker.focus = true;
       }, 350);
