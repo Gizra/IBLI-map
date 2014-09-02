@@ -86,12 +86,12 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
         },
         maxbounds: {
           southWest: {
-            lat: -2.3613917533090936,
-            lng: 31.662597656249996
+            lat: -9.282399,
+            lng: 31.629395
           },
           northEast: {
-            lat: 3.984820817420321,
-            lng: 44.703369140625
+            lat: 10.268303,
+            lng: 43.275635
           }
         },
         legend: {
@@ -238,8 +238,8 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
   '$http',
   '$compile',
   'ibliData',
-  '$log',
-  function ($scope, $http, $compile, ibliData, $log) {
+  '$timeout',
+  function ($scope, $http, $compile, ibliData, $timeout) {
     // Custom control for displaying name of division and percent on hover.
     $scope.controls = { custom: [] };
     // Set marker potions.
@@ -284,6 +284,7 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
       var district = '';
       var properties = layer.feature.properties;
       var marker = $scope.markers.kenya;
+      marker.focus = false;
       switch (properties.DISTRICT) {
       case 'WAJIR':
       case 'MANDERA':
@@ -308,7 +309,9 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
       marker.lat = properties.Y;
       marker.lng = properties.X;
       marker.message = '<div>' + '<strong>' + properties.DIVISION + '</strong>' + '<dl>' + '<dt>Next Sales Window:</dt>' + '<dd>' + $scope.nextSalesWindow + '</dd>' + '<dt>Next Potential Payout:</dt>' + '<dd>' + $scope.nextPayout + '</dd>' + '<dt>Insurer:</dt>' + '<dd class="insurers">' + district + '</dd>' + '</dl>' + '</div>';
-      marker.focus = true;
+      $timeout(function () {
+        marker.focus = true;
+      }, 350);
     });
     // Reload the map when the period is changed.
     // TODO: Update the map without reloading the geoJson file.
