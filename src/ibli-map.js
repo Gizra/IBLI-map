@@ -156,7 +156,10 @@ angular
             continue;
           }
 
-          periods.push(headers[column]);
+          // Create the period label.
+          var year = headers[column].match(/\d{4}/)[0];
+          var season = headers[column].match(/S/) ? 'Short season' : 'Long season';
+          periods.unshift({value: headers[column], label: year + ', ' + season});
 
           indices[headers[column]] = [];
           // Add the values from all rows to each index.
@@ -169,10 +172,10 @@ angular
 
         // Show by default the latest period.
         if (!period) {
-          period = periods[periods.length - 1];
+          period = periods[0];
         }
 
-        divIdToIndex = indices[period];
+        divIdToIndex = indices[period.value];
 
         deferred.resolve(periods);
       });
@@ -291,7 +294,7 @@ angular
 
       // Set default period to the latest one.
       if ($scope.period == undefined) {
-        $scope.period = $scope.periods[$scope.periods.length - 1];
+        $scope.period = $scope.periods[0];
       }
 
       // Get geoJson data. We do this here because we need the divIdToIndex
@@ -307,7 +310,7 @@ angular
     var periodSelect = L.control();
     periodSelect.setPosition('topright');
     periodSelect.onAdd = function () {
-      return $compile(angular.element('<select ng-model="period" ng-options="period for period in periods"></select>'))($scope)[0];
+      return $compile(angular.element('<select ng-model="period" ng-options="period.label for period in periods track by period.value"></select>'))($scope)[0];
     };
     $scope.controls.custom.push(periodSelect);
 
