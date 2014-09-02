@@ -330,7 +330,7 @@ angular
       var district = '';
       var properties = layer.feature.properties;
       var marker = $scope.markers.kenya;
-     marker.focus = false;
+      marker.focus = false;
       switch (properties.DISTRICT) {
         case 'WAJIR':
         case 'MANDERA':
