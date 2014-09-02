@@ -120,17 +120,6 @@ angular
             lat: 3.984820817420321,
             lng: 44.703369140625
           }
-        },
-        legend: {
-          position: 'bottomleft',
-          colors: _getColors(),
-          labels: [
-            '0%-6%',
-            '6%-8%',
-            '8%-10%',
-            '10%-15%',
-            '15%-100%'
-          ]
         }
       };
     }
