@@ -113,12 +113,12 @@ angular
         },
         maxbounds: {
           southWest:{
-            lat: -2.3613917533090936,
-            lng: 31.662597656249996
+            lat: -9.282399,
+            lng: 31.662597
           },
           northEast:{
-            lat: 3.984820817420321,
-            lng: 44.703369140625
+            lat: 10.268303,
+            lng: 44.703369
           }
         }
       };
@@ -263,7 +263,7 @@ angular
       }
     };
   })
-  .controller('MainCtrl', function ($scope, $http, $compile, ibliData, $log) {
+  .controller('MainCtrl', function ($scope, $http, $compile, ibliData, $timeout) {
 
     // Custom control for displaying name of division and percent on hover.
     $scope.controls = { custom: [] };
@@ -321,6 +321,7 @@ angular
       var district = '';
       var properties = layer.feature.properties;
       var marker = $scope.markers.kenya;
+      marker.focus = false;
       switch (properties.DISTRICT) {
         case 'WAJIR':
         case 'MANDERA':
@@ -358,7 +359,9 @@ angular
           '</dd>' +
         '</dl>' +
       '</div>';
-      marker.focus = true;
+      $timeout(function() {
+        marker.focus = true;
+      }, 350);
     });
 
     // Reload the map when the period is changed.
