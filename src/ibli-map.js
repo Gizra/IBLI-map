@@ -195,10 +195,10 @@ angular
         method: 'GET',
         url: 'sites/default/files/data/KenyaEthiopia_IBLIunits_July2014.geojson',
         serverPredefined: true
-      }).success(function(kenyaEthiopiaDivisions) {
+      }).success(function(divisions) {
         // Prepare geoJson object with the division data.
         var geojsonObject = {
-          data: kenyaEthiopiaDivisions,
+          data: divisions,
           style: style,
           resetStyleOnMouseout: true
         };
