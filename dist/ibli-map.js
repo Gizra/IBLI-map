@@ -71,10 +71,10 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
      */
     function _getMapOptions() {
       return {
-        kenya: {
+        center: {
           lat: 1.1864,
           lng: 37.925,
-          zoom: 7
+          zoom: 6
         },
         defaults: {
           minZoom: 6,
@@ -86,12 +86,12 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
         },
         maxbounds: {
           southWest: {
-            lat: -2.3613917533090936,
-            lng: 31.662597656249996
+            lat: -9.282399,
+            lng: 31.662597
           },
           northEast: {
-            lat: 3.984820817420321,
-            lng: 44.703369140625
+            lat: 10.268303,
+            lng: 44.703369
           }
         }
       };
@@ -157,17 +157,16 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
      *    Object of geoJson data, used for extending the scope.
      */
     function _getGeoJson() {
-      var path = Drupal.settings.ibli_general.iblimap_library_path;
       // Get divisions data from geoJSON file.
       var deferred = $q.defer();
       $http({
         method: 'GET',
-        url: path + '/json/kenya.json',
+        url: 'sites/default/files/data/KenyaEthiopia_IBLIunits_July2014.geojson',
         serverPredefined: true
-      }).success(function (kenyaDivisions) {
+      }).success(function (divisions) {
         // Prepare geoJson object with the division data.
         var geojsonObject = {
-            data: kenyaDivisions,
+            data: divisions,
             style: style,
             resetStyleOnMouseout: true
           };
@@ -186,7 +185,7 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
      */
     function style(feature) {
       return {
-        fillColor: getColor(feature.properties.DIV_ID),
+        fillColor: getColor(feature.properties.IBLI_ID),
         weight: 2,
         opacity: 1,
         color: 'white',
@@ -233,8 +232,8 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
   '$http',
   '$compile',
   'ibliData',
-  '$log',
-  function ($scope, $http, $compile, ibliData, $log) {
+  '$timeout',
+  function ($scope, $http, $compile, ibliData, $timeout) {
     // Custom control for displaying name of division and percent on hover.
     $scope.controls = { custom: [] };
     // Set marker potions.
@@ -277,8 +276,10 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
       layer.setStyle(ibliData.getHoverStyle());
       layer.bringToFront();
       var district = '';
+      var latLng = leafletEvent.latlng;
       var properties = layer.feature.properties;
       var marker = $scope.markers.kenya;
+      marker.focus = false;
       switch (properties.DISTRICT) {
       case 'WAJIR':
       case 'MANDERA':
@@ -300,10 +301,12 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
         district = 'TBD';
         break;
       }
-      marker.lat = properties.Y;
-      marker.lng = properties.X;
-      marker.message = '<div>' + '<strong>' + properties.DIVISION + '</strong>' + '<dl>' + '<dt>Next Sales Window:</dt>' + '<dd>' + $scope.nextSalesWindow + '</dd>' + '<dt>Next Potential Payout:</dt>' + '<dd>' + $scope.nextPayout + '</dd>' + '<dt>Insurer:</dt>' + '<dd class="insurers">' + district + '</dd>' + '</dl>' + '</div>';
-      marker.focus = true;
+      marker.lat = latLng.lat;
+      marker.lng = latLng.lng;
+      marker.message = '<div>' + '<strong>' + properties.DIVI_WOR + '</strong>' + '<dl>' + '<dt>Next Sales Window:</dt>' + '<dd>' + $scope.nextSalesWindow + '</dd>' + '<dt>Next Potential Payout:</dt>' + '<dd>' + $scope.nextPayout + '</dd>' + '<dt>Insurer:</dt>' + '<dd class="insurers">' + district + '</dd>' + '</dl>' + '</div>';
+      $timeout(function () {
+        marker.focus = true;
+      }, 350);
     });
     // Reload the map when the period is changed.
     // TODO: Update the map without reloading the geoJson file.
