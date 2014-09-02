@@ -145,7 +145,6 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
         if (!period) {
           period = periods[0];
         }
-        console.log(period);
         divIdToIndex = indices[period.value];
         deferred.resolve(periods);
       });
