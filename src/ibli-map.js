@@ -38,7 +38,7 @@ angular
       }
     };
   })
-  .factory('ibliData', function ($http, $q) {
+  .factory('ibliData', function ($http, $q, $log) {
 
     var divIdToIndex = [];
 
@@ -67,11 +67,11 @@ angular
      */
     function _getColors() {
       return [
-        '#00AA00',
-        '#DDDD00',
-        '#BB5500',
+        '#000000',
         '#AA0000',
-        '#000000'
+        '#BB5500',
+        '#DDDD00',
+        '#00AA00'
       ];
     }
 

@@ -20,7 +20,8 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
 ]).factory('ibliData', [
   '$http',
   '$q',
-  function ($http, $q) {
+  '$log',
+  function ($http, $q, $log) {
     var divIdToIndex = [];
     /**
      * Get current season.
@@ -44,11 +45,11 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
      */
     function _getColors() {
       return [
-        '#00AA00',
-        '#DDDD00',
-        '#BB5500',
+        '#000000',
         '#AA0000',
-        '#000000'
+        '#BB5500',
+        '#DDDD00',
+        '#00AA00'
       ];
     }
     /**
@@ -163,10 +164,10 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
         method: 'GET',
         url: 'sites/default/files/data/KenyaEthiopia_IBLIunits_July2014.geojson',
         serverPredefined: true
-      }).success(function (kenyaEthiopiaDivisions) {
+      }).success(function (divisions) {
         // Prepare geoJson object with the division data.
         var geojsonObject = {
-            data: kenyaEthiopiaDivisions,
+            data: divisions,
             style: style,
             resetStyleOnMouseout: true
           };
@@ -206,6 +207,7 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
       // Get index for the given division ID.
       var index = divIdToIndex[divId];
       var colors = _getColors();
+      $log.log(colors);
       return colors[index - 1];
     }
     // Public API here
