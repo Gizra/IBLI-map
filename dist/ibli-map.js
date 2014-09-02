@@ -157,12 +157,11 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
      *    Object of geoJson data, used for extending the scope.
      */
     function _getGeoJson() {
-      var path = Drupal.settings.ibli_general.iblimap_library_path;
       // Get divisions data from geoJSON file.
       var deferred = $q.defer();
       $http({
         method: 'GET',
-        url: path + '/json/kenya.json',
+        url: 'sites/default/files/data/KenyaEthiopia_IBLIunits_July2014.geojson',
         serverPredefined: true
       }).success(function (kenyaDivisions) {
         // Prepare geoJson object with the division data.
