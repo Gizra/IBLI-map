@@ -20,8 +20,7 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
 ]).factory('ibliData', [
   '$http',
   '$q',
-  '$log',
-  function ($http, $q, $log) {
+  function ($http, $q) {
     var divIdToIndex = [];
     /**
      * Get current season.
@@ -207,7 +206,6 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
       // Get index for the given division ID.
       var index = divIdToIndex[divId];
       var colors = _getColors();
-      $log.log(colors);
       return colors[index - 1];
     }
     // Public API here

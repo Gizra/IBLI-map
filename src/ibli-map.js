@@ -38,7 +38,7 @@ angular
       }
     };
   })
-  .factory('ibliData', function ($http, $q, $log) {
+  .factory('ibliData', function ($http, $q) {
 
     var divIdToIndex = [];
 
