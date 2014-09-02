@@ -54,7 +54,7 @@ angular
       var currentMonth = date.getMonth() + 1;
 
       // Get current season, in March-September it is "LRLD", otherwise "SRSD".
-      var currentSeason = currentMonth >=3 && currentMonth <= 9 ? 'LRLD' : 'SRSD';
+      var currentSeason = currentMonth >= 3 && currentMonth <= 9 ? 'LRLD' : 'SRSD';
 
       return currentSeason;
     }
@@ -96,10 +96,10 @@ angular
      */
     function _getMapOptions() {
       return {
-        kenya: {
+        center: {
           lat: 1.1864,
           lng: 37.925,
-          zoom: 7
+          zoom: 6
         },
         defaults: {
           minZoom: 6,
@@ -120,17 +120,6 @@ angular
             lat: 10.268303,
             lng: 44.703369
           }
-        },
-        legend: {
-          position: 'bottomleft',
-          colors: _getColors(),
-          labels: [
-            '0%-6%',
-            '6%-8%',
-            '8%-10%',
-            '10%-15%',
-            '15%-100%'
-          ]
         }
       };
     }
@@ -167,7 +156,10 @@ angular
             continue;
           }
 
-          periods.push(headers[column]);
+          // Create the period label.
+          var year = headers[column].match(/\d{4}/)[0];
+          var season = headers[column].match(/S/) ? 'Short season' : 'Long season';
+          periods.unshift({value: headers[column], label: year + ', ' + season});
 
           indices[headers[column]] = [];
           // Add the values from all rows to each index.
@@ -180,10 +172,10 @@ angular
 
         // Show by default the latest period.
         if (!period) {
-          period = periods[periods.length - 1];
+          period = periods[0];
         }
 
-        divIdToIndex = indices[period];
+        divIdToIndex = indices[period.value];
 
         deferred.resolve(periods);
       });
@@ -197,22 +189,21 @@ angular
      *    Object of geoJson data, used for extending the scope.
      */
     function _getGeoJson() {
-      var path = Drupal.settings.ibli_general.iblimap_library_path;
       // Get divisions data from geoJSON file.
       var deferred = $q.defer();
       $http({
         method: 'GET',
-        url: path + '/json/kenya.json',
+        url: 'sites/default/files/data/KenyaEthiopia_IBLIunits_July2014.geojson',
         serverPredefined: true
-      }).success(function(kenyaDivisions) {
-          // Prepare geoJson object with the division data.
-          var geojsonObject = {
-            data: kenyaDivisions,
-            style: style,
-            resetStyleOnMouseout: true
-          };
-          deferred.resolve(geojsonObject);
-        });
+      }).success(function(divisions) {
+        // Prepare geoJson object with the division data.
+        var geojsonObject = {
+          data: divisions,
+          style: style,
+          resetStyleOnMouseout: true
+        };
+        deferred.resolve(geojsonObject);
+      });
       return deferred.promise;
     }
 
@@ -227,7 +218,7 @@ angular
      */
     function style(feature) {
       return {
-        fillColor: getColor(feature.properties.DIV_ID),
+        fillColor: getColor(feature.properties.IBLI_ID),
         weight: 2,
         opacity: 1,
         color: 'white',
@@ -302,7 +293,7 @@ angular
 
       // Set default period to the latest one.
       if ($scope.period == undefined) {
-        $scope.period = $scope.periods[$scope.periods.length - 1];
+        $scope.period = $scope.periods[0];
       }
 
       // Get geoJson data. We do this here because we need the divIdToIndex
@@ -318,7 +309,7 @@ angular
     var periodSelect = L.control();
     periodSelect.setPosition('topright');
     periodSelect.onAdd = function () {
-      return $compile(angular.element('<select ng-model="period" ng-options="period for period in periods"></select>'))($scope)[0];
+      return $compile(angular.element('<select ng-model="period" ng-options="period.label for period in periods track by period.value"></select>'))($scope)[0];
     };
     $scope.controls.custom.push(periodSelect);
 
@@ -328,6 +319,7 @@ angular
       layer.setStyle(ibliData.getHoverStyle());
       layer.bringToFront();
       var district = '';
+      var latLng = leafletEvent.latlng;
       var properties = layer.feature.properties;
       var marker = $scope.markers.kenya;
       marker.focus = false;
@@ -352,22 +344,22 @@ angular
           district = 'TBD';
           break;
       }
-      marker.lat = properties.Y;
-      marker.lng = properties.X;
+      marker.lat = latLng.lat;
+      marker.lng = latLng.lng;
       marker.message =
         '<div>' +
-        '<strong>' + properties.DIVISION + '</strong>'+
-        '<dl>' +
-          '<dt>Next Sales Window:</dt>' +
-          '<dd>' + $scope.nextSalesWindow + '</dd>' +
-          '<dt>Next Potential Payout:</dt>' +
-          '<dd>' + $scope.nextPayout + '</dd>' +
-          '<dt>Insurer:</dt>' +
-          '<dd class="insurers">' +
-            district +
-          '</dd>' +
-        '</dl>' +
-      '</div>';
+            '<strong>' + properties.DIVI_WOR + '</strong>'+
+          '<dl>' +
+            '<dt>Next Sales Window:</dt>' +
+            '<dd>' + $scope.nextSalesWindow + '</dd>' +
+            '<dt>Next Potential Payout:</dt>' +
+            '<dd>' + $scope.nextPayout + '</dd>' +
+            '<dt>Insurer:</dt>' +
+            '<dd class="insurers">' +
+              district +
+            '</dd>' +
+          '</dl>' +
+        '</div>';
       $timeout(function() {
         marker.focus = true;
       }, 350);

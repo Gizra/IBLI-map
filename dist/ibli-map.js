@@ -71,10 +71,10 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
      */
     function _getMapOptions() {
       return {
-        kenya: {
+        center: {
           lat: 1.1864,
           lng: 37.925,
-          zoom: 7
+          zoom: 6
         },
         defaults: {
           minZoom: 6,
@@ -93,17 +93,6 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
             lat: 10.268303,
             lng: 44.703369
           }
-        },
-        legend: {
-          position: 'bottomleft',
-          colors: _getColors(),
-          labels: [
-            '0%-6%',
-            '6%-8%',
-            '8%-10%',
-            '10%-15%',
-            '15%-100%'
-          ]
         }
       };
     }
@@ -137,7 +126,13 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
           if (!headers[column].match(/\d{4}[L|S]/)) {
             continue;
           }
-          periods.push(headers[column]);
+          // Create the period label.
+          var year = headers[column].match(/\d{4}/)[0];
+          var season = headers[column].match(/S/) ? 'Short season' : 'Long season';
+          periods.unshift({
+            value: headers[column],
+            label: year + ', ' + season
+          });
           indices[headers[column]] = [];
           // Add the values from all rows to each index.
           rows.forEach(function (row) {
@@ -148,9 +143,9 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
         }
         // Show by default the latest period.
         if (!period) {
-          period = periods[periods.length - 1];
+          period = periods[0];
         }
-        divIdToIndex = indices[period];
+        divIdToIndex = indices[period.value];
         deferred.resolve(periods);
       });
       return deferred.promise;
@@ -162,17 +157,16 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
      *    Object of geoJson data, used for extending the scope.
      */
     function _getGeoJson() {
-      var path = Drupal.settings.ibli_general.iblimap_library_path;
       // Get divisions data from geoJSON file.
       var deferred = $q.defer();
       $http({
         method: 'GET',
-        url: path + '/json/kenya.json',
+        url: 'sites/default/files/data/KenyaEthiopia_IBLIunits_July2014.geojson',
         serverPredefined: true
-      }).success(function (kenyaDivisions) {
+      }).success(function (kenyaEthiopiaDivisions) {
         // Prepare geoJson object with the division data.
         var geojsonObject = {
-            data: kenyaDivisions,
+            data: kenyaEthiopiaDivisions,
             style: style,
             resetStyleOnMouseout: true
           };
@@ -191,7 +185,7 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
      */
     function style(feature) {
       return {
-        fillColor: getColor(feature.properties.DIV_ID),
+        fillColor: getColor(feature.properties.IBLI_ID),
         weight: 2,
         opacity: 1,
         color: 'white',
@@ -260,7 +254,7 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
       $scope.periods = data;
       // Set default period to the latest one.
       if ($scope.period == undefined) {
-        $scope.period = $scope.periods[$scope.periods.length - 1];
+        $scope.period = $scope.periods[0];
       }
       // Get geoJson data. We do this here because we need the divIdToIndex
       // data to be available for the geoJson to work properly.
@@ -273,7 +267,7 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
     var periodSelect = L.control();
     periodSelect.setPosition('topright');
     periodSelect.onAdd = function () {
-      return $compile(angular.element('<select ng-model="period" ng-options="period for period in periods"></select>'))($scope)[0];
+      return $compile(angular.element('<select ng-model="period" ng-options="period.label for period in periods track by period.value"></select>'))($scope)[0];
     };
     $scope.controls.custom.push(periodSelect);
     // When hovering a division.
@@ -282,6 +276,7 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
       layer.setStyle(ibliData.getHoverStyle());
       layer.bringToFront();
       var district = '';
+      var latLng = leafletEvent.latlng;
       var properties = layer.feature.properties;
       var marker = $scope.markers.kenya;
       marker.focus = false;
@@ -306,9 +301,9 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
         district = 'TBD';
         break;
       }
-      marker.lat = properties.Y;
-      marker.lng = properties.X;
-      marker.message = '<div>' + '<strong>' + properties.DIVISION + '</strong>' + '<dl>' + '<dt>Next Sales Window:</dt>' + '<dd>' + $scope.nextSalesWindow + '</dd>' + '<dt>Next Potential Payout:</dt>' + '<dd>' + $scope.nextPayout + '</dd>' + '<dt>Insurer:</dt>' + '<dd class="insurers">' + district + '</dd>' + '</dl>' + '</div>';
+      marker.lat = latLng.lat;
+      marker.lng = latLng.lng;
+      marker.message = '<div>' + '<strong>' + properties.DIVI_WOR + '</strong>' + '<dl>' + '<dt>Next Sales Window:</dt>' + '<dd>' + $scope.nextSalesWindow + '</dd>' + '<dt>Next Potential Payout:</dt>' + '<dd>' + $scope.nextPayout + '</dd>' + '<dt>Insurer:</dt>' + '<dd class="insurers">' + district + '</dd>' + '</dl>' + '</div>';
       $timeout(function () {
         marker.focus = true;
       }, 350);
