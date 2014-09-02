@@ -87,11 +87,11 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
         maxbounds: {
           southWest: {
             lat: -9.282399,
-            lng: 31.629395
+            lng: 31.662597
           },
           northEast: {
             lat: 10.268303,
-            lng: 43.275635
+            lng: 44.703369
           }
         },
         legend: {
