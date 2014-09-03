@@ -20,7 +20,8 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
 ]).factory('ibliData', [
   '$http',
   '$q',
-  function ($http, $q) {
+  '$log',
+  function ($http, $q, $log) {
     var divIdToIndex = [];
     /**
      * Get current season.
@@ -175,6 +176,26 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
       return deferred.promise;
     }
     /**
+     * Get premium rates keyed by division ID.
+     *
+     * @return
+     *    Int of premium rate.
+     */
+    function _getPremiumRates() {
+      // Get divisions data from geoJSON file.
+      var deferred = $q.defer();
+      $http({
+        method: 'GET',
+        url: 'sites/default/files/data/rates.json',
+        serverPredefined: true
+      }).success(function (rates) {
+        // Prepare geoJson object with the division data.
+        var ratesObject = { data: rates };
+        deferred.resolve(ratesObject);
+      });
+      return deferred.promise;
+    }
+    /**
      * Returns style settings for a given geoJson feature.
      *
      * @param feature
@@ -224,6 +245,9 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
       },
       getSeason: function () {
         return _getSeason();
+      },
+      getPremiumRates: function () {
+        return _getPremiumRates();
       }
     };
   }
@@ -233,7 +257,8 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
   '$compile',
   'ibliData',
   '$timeout',
-  function ($scope, $http, $compile, ibliData, $timeout) {
+  '$log',
+  function ($scope, $http, $compile, ibliData, $timeout, $log) {
     // Custom control for displaying name of division and percent on hover.
     $scope.controls = { custom: [] };
     // Set marker potions.
@@ -264,6 +289,10 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
     });
     $scope.nextSalesWindow = ibliData.getSeason() == 'LRLD' ? 'Aug/Sept' : 'Jan/Feb';
     $scope.nextPayout = ibliData.getSeason() == 'LRLD' ? 'March' : 'October';
+    // Get divIdToIndex data.
+    ibliData.getPremiumRates().then(function (data) {
+      $scope.rates = data;
+    });
     var periodSelect = L.control();
     periodSelect.setPosition('topright');
     periodSelect.onAdd = function () {
@@ -279,6 +308,15 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
       var latLng = leafletEvent.latlng;
       var properties = layer.feature.properties;
       var marker = $scope.markers.kenya;
+      // Display the premium rate.
+      var rateHTML = '';
+      var season = $scope.period.value.match(/S/) ? 'Aug/Sep' : 'Jan/Feb';
+      var year = $scope.period.value.match(/\d{4}/)[0];
+      var premiumRate = ($scope.rates.data[properties.IBLI_ID][season + year] * 100).toFixed(2);
+      if (premiumRate && premiumRate != 'NaN') {
+        var rateHTML = '<div>' + 'Premium Rate: <strong>' + premiumRate + '%</strong>' + '</div>';
+      }
+      // End of Calculating the premium rate.
       marker.focus = false;
       switch (properties.DISTRICT) {
       case 'WAJIR':
@@ -303,7 +341,7 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
       }
       marker.lat = latLng.lat;
       marker.lng = latLng.lng;
-      marker.message = '<div>' + '<strong>' + properties.DIVI_WOR + '</strong>' + '<dl>' + '<dt>Next Sales Window:</dt>' + '<dd>' + $scope.nextSalesWindow + '</dd>' + '<dt>Next Potential Payout:</dt>' + '<dd>' + $scope.nextPayout + '</dd>' + '<dt>Insurer:</dt>' + '<dd class="insurers">' + district + '</dd>' + '</dl>' + '</div>';
+      marker.message = '<div>' + '<div>' + '<strong>' + properties.DIVI_WOR + '</strong>' + '</div>' + rateHTML + '<dl>' + '<dt>Next Sales Window:</dt>' + '<dd>' + $scope.nextSalesWindow + '</dd>' + '<dt>Next Potential Payout:</dt>' + '<dd>' + $scope.nextPayout + '</dd>' + '<dt>Insurer:</dt>' + '<dd class="insurers">' + district + '</dd>' + '</dl>' + '</div>';
       $timeout(function () {
         marker.focus = true;
       }, 350);
