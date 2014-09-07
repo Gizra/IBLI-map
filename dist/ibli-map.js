@@ -20,8 +20,7 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
 ]).factory('ibliData', [
   '$http',
   '$q',
-  '$log',
-  function ($http, $q, $log) {
+  function ($http, $q) {
     var divIdToIndex = [];
     /**
      * Get current season.
@@ -257,8 +256,7 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
   '$compile',
   'ibliData',
   '$timeout',
-  '$log',
-  function ($scope, $http, $compile, ibliData, $timeout, $log) {
+  function ($scope, $http, $compile, ibliData, $timeout) {
     // Custom control for displaying name of division and percent on hover.
     $scope.controls = { custom: [] };
     // Set marker potions.
