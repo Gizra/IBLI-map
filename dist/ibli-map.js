@@ -275,7 +275,8 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
       var layer = leafletEvent.target;
       layer.setStyle(ibliData.getHoverStyle());
       layer.bringToFront();
-      var district = '';
+      // Where there's no known insurer, display TBD.
+      var insurer = 'TBD';
       var latLng = leafletEvent.latlng;
       var properties = layer.feature.properties;
       var marker = $scope.markers.kenya;
@@ -284,13 +285,13 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
       case 'WAJIR':
       case 'MANDERA':
       case 'GARISSA':
-        district = '<a href="http://www.takafulafrica.com/">Takaful</a>';
+        insurer = '<a href="http://www.takafulafrica.com/">Takaful</a>';
         break;
       case 'ISIOLO':
-        district = '<a href="http://www.takafulafrica.com/">Takaful</a> | <a href="http://www.apainsurance.org/">APA</a>';
+        insurer = '<a href="http://www.takafulafrica.com/">Takaful</a> | <a href="http://www.apainsurance.org/">APA</a>';
         break;
       case 'MARSABIT':
-        district = '<a href="http://www.apainsurance.org/">APA</a>';
+        insurer = '<a href="http://www.apainsurance.org/">APA</a>';
         break;
       case 'MOYALE':
       case 'IJARA':
@@ -298,12 +299,12 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
       case 'SAMBURU':
       case 'BARINGO':
       case 'TURKANA':
-        district = 'TBD';
+        insurer = 'TBD';
         break;
       }
       marker.lat = latLng.lat;
       marker.lng = latLng.lng;
-      marker.message = '<div>' + '<strong>' + properties.DIVI_WOR + '</strong>' + '<dl>' + '<dt>Next Sales Window:</dt>' + '<dd>' + $scope.nextSalesWindow + '</dd>' + '<dt>Next Potential Payout:</dt>' + '<dd>' + $scope.nextPayout + '</dd>' + '<dt>Insurer:</dt>' + '<dd class="insurers">' + district + '</dd>' + '</dl>' + '</div>';
+      marker.message = '<div>' + '<strong>' + properties.DIVI_WOR + '</strong>' + '<dl>' + '<dt>Next Sales Window:</dt>' + '<dd>' + $scope.nextSalesWindow + '</dd>' + '<dt>Next Potential Payout:</dt>' + '<dd>' + $scope.nextPayout + '</dd>' + '<dt>Insurer:</dt>' + '<dd class="insurers">' + insurer + '</dd>' + '</dl>' + '</div>';
       $timeout(function () {
         marker.focus = true;
       }, 350);

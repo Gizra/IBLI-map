@@ -318,7 +318,8 @@ angular
       var layer = leafletEvent.target;
       layer.setStyle(ibliData.getHoverStyle());
       layer.bringToFront();
-      var district = '';
+      // Where there's no known insurer, display TBD.
+      var insurer = 'TBD';
       var latLng = leafletEvent.latlng;
       var properties = layer.feature.properties;
       var marker = $scope.markers.kenya;
@@ -327,13 +328,13 @@ angular
         case 'WAJIR':
         case 'MANDERA':
         case 'GARISSA':
-          district = '<a href="http://www.takafulafrica.com/">Takaful</a>';
+          insurer = '<a href="http://www.takafulafrica.com/">Takaful</a>';
           break;
         case 'ISIOLO':
-          district = '<a href="http://www.takafulafrica.com/">Takaful</a> | <a href="http://www.apainsurance.org/">APA</a>';
+          insurer = '<a href="http://www.takafulafrica.com/">Takaful</a> | <a href="http://www.apainsurance.org/">APA</a>';
           break;
         case 'MARSABIT':
-          district = '<a href="http://www.apainsurance.org/">APA</a>';
+          insurer = '<a href="http://www.apainsurance.org/">APA</a>';
           break;
         case 'MOYALE':
         case 'IJARA':
@@ -341,7 +342,7 @@ angular
         case 'SAMBURU':
         case 'BARINGO':
         case 'TURKANA':
-          district = 'TBD';
+          insurer = 'TBD';
           break;
       }
       marker.lat = latLng.lat;
@@ -356,7 +357,7 @@ angular
             '<dd>' + $scope.nextPayout + '</dd>' +
             '<dt>Insurer:</dt>' +
             '<dd class="insurers">' +
-              district +
+              insurer +
             '</dd>' +
           '</dl>' +
         '</div>';
