@@ -252,11 +252,14 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
   }
 ]).controller('MainCtrl', [
   '$scope',
+  '$attrs',
   '$http',
   '$compile',
   'ibliData',
   '$timeout',
-  function ($scope, $http, $compile, ibliData, $timeout) {
+  'leafletData',
+  '$log',
+  function ($scope, $attrs, $http, $compile, ibliData, $timeout, leafletData, $log) {
     // Custom control for displaying name of division and percent on hover.
     $scope.controls = { custom: [] };
     // Set marker potions.
@@ -291,12 +294,29 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
     ibliData.getPremiumRates().then(function (data) {
       $scope.rates = data;
     });
-    var periodSelect = L.control();
-    periodSelect.setPosition('topright');
-    periodSelect.onAdd = function () {
-      return $compile(angular.element('<select ng-model="period" ng-options="period.label for period in periods track by period.value"></select>'))($scope)[0];
-    };
-    $scope.controls.custom.push(periodSelect);
+    if ($attrs.periodList == 'true') {
+      var periodSelect = L.control();
+      periodSelect.setPosition('topright');
+      periodSelect.onAdd = function () {
+        return $compile(angular.element('<select ng-model="period" ng-options="period.label for period in periods track by period.value"></select>'))($scope)[0];
+      };
+      $scope.controls.custom.push(periodSelect);
+      var snapshot = document.getElementById('snapshot');
+      $scope.takeImage = function () {
+        leafletData.getMap().then(function (map) {
+          leafletImage(map, function (err, canvas) {
+            $log.log('test');
+            var img = document.createElement('img');
+            var dimensions = map.getSize();
+            img.width = dimensions.x;
+            img.height = dimensions.y;
+            img.src = canvas.toDataURL();
+            document.getElementById('snapshot').innerHTML = '';
+            document.getElementById('snapshot').appendChild(img);
+          });
+        });
+      };
+    }
     // When hovering a division.
     $scope.$on('leafletDirectiveMap.geojsonMouseover', function (ev, leafletEvent) {
       var layer = leafletEvent.target;
