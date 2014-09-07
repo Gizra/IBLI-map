@@ -38,7 +38,7 @@ angular
       }
     };
   })
-  .factory('ibliData', function ($http, $q, $log) {
+  .factory('ibliData', function ($http, $q) {
 
     var divIdToIndex = [];
 
@@ -289,7 +289,7 @@ angular
       }
     };
   })
-  .controller('MainCtrl', function ($scope, $http, $compile, ibliData, $timeout, $log) {
+  .controller('MainCtrl', function ($scope, $http, $compile, ibliData, $timeout) {
 
     // Custom control for displaying name of division and percent on hover.
     $scope.controls = { custom: [] };
