@@ -356,7 +356,7 @@ angular
       var marker = $scope.markers.kenya;
       // Display the premium rate.
       var rateHTML = '';
-      var season = $scope.period.value.match(/S/) ? 'Aug/Sep' : 'Jan/Feb';
+      var season = $scope.period.value.match(/L/) ? 'Aug/Sep' : 'Jan/Feb';
       var year = $scope.period.value.match(/\d{4}/)[0];
       var premiumRate = ($scope.rates.data[properties.IBLI_ID][season + year] * 100).toFixed(2);
       if (premiumRate && premiumRate != 'NaN') {
