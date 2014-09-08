@@ -345,19 +345,33 @@ angular
       };
       $scope.controls.custom.push(periodSelect);
 
-      var snapshot = document.getElementById('snapshot');
-
-      $scope.takeImage = function() {
+      $scope.savePDF = function() {
         leafletData.getMap().then(function(map) {
+
           leafletImage(map, function(err, canvas) {
-            $log.log('test');
             var img = document.createElement('img');
             var dimensions = map.getSize();
             img.width = dimensions.x;
             img.height = dimensions.y;
             img.src = canvas.toDataURL();
-            document.getElementById('snapshot').innerHTML = '';
-            document.getElementById('snapshot').appendChild(img);
+
+            var data = {
+              map: img.src,
+              period: $scope.period.value,
+              map_height: img.height,
+              map_width: img.width
+            };
+
+            $http({
+              method: 'POST',
+              url: 'pim/save-pdf',
+              headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+              },
+              data: jQuery.param(data)
+            }).success(function(pdf) {
+              $log.log(pdf);
+            });
           });
         });
       };
