@@ -258,8 +258,8 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
   'ibliData',
   '$timeout',
   'leafletData',
-  '$log',
-  function ($scope, $attrs, $http, $compile, ibliData, $timeout, leafletData, $log) {
+  '$window',
+  function ($scope, $attrs, $http, $compile, ibliData, $timeout, leafletData, $window) {
     // Custom control for displaying name of division and percent on hover.
     $scope.controls = { custom: [] };
     // Set marker potions.
@@ -321,7 +321,7 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
               headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
               data: jQuery.param(data)
             }).success(function (pdf) {
-              $log.log(pdf);
+              $window.open(pdf, '_blank');
             });
           });
         });

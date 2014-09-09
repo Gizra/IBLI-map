@@ -289,7 +289,7 @@ angular
       }
     };
   })
-  .controller('MainCtrl', function ($scope, $attrs, $http, $compile, ibliData, $timeout, leafletData, $log) {
+  .controller('MainCtrl', function ($scope, $attrs, $http, $compile, ibliData, $timeout, leafletData, $window) {
 
     // Custom control for displaying name of division and percent on hover.
     $scope.controls = { custom: [] };
@@ -370,7 +370,7 @@ angular
               },
               data: jQuery.param(data)
             }).success(function(pdf) {
-              $log.log(pdf);
+              $window.open(pdf, '_blank');
             });
           });
         });
