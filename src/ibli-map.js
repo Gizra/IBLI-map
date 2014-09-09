@@ -99,7 +99,7 @@ angular
         center: {
           lat: 1.1864,
           lng: 37.925,
-          zoom: 6
+          zoom: 7
         },
         defaults: {
           minZoom: 6,
@@ -345,10 +345,12 @@ angular
       };
       $scope.controls.custom.push(periodSelect);
 
+      // Create an Image from the map and send it to the server to save as PDF.
       $scope.savePDF = function() {
         angular.element('#spinner').show();
+        // Get the map data.
         leafletData.getMap().then(function(map) {
-
+          // Call leafletImage library and it will return the PNG image.
           leafletImage(map, function(err, canvas) {
             var img = document.createElement('img');
             var dimensions = map.getSize();
@@ -362,7 +364,7 @@ angular
               map_width: img.width,
               map_height: img.height
             };
-
+            // Send the image to drupal for saving as PDF.
             $http({
               method: 'POST',
               url: 'pim/save-pdf',
@@ -370,9 +372,12 @@ angular
                 'Content-Type': 'application/x-www-form-urlencoded'
               },
               data: jQuery.param(data)
-            }).success(function(pdf) {
+            }).success(function(pdf_path) {
+              // Upon success Hide the Spinner GIF and show the link to download the PDF.
               angular.element('#spinner').hide();
-              $window.location.href = pdf;
+              angular.element('#save_button').hide();
+              $scope.pdf_path = pdf_path;
+              angular.element('#download_link').show();
             });
           });
         });
