@@ -398,6 +398,9 @@ angular
       var rateHTML = '';
       var season = $scope.period.value.match(/L/) ? 'Aug/Sep' : 'Jan/Feb';
       var year = $scope.period.value.match(/\d{4}/)[0];
+      // Don't display the year in the popup if the period is in the past.
+      var nextSalesWindow = new Date().getFullYear() > year ? $scope.nextSalesWindow : $scope.nextSalesWindow + ' ' + year;
+      var nextPayout = new Date().getFullYear() > year ? $scope.nextPayout : $scope.nextPayout + ' ' + year;
       // Check if Division is in the csv file.
       if ($scope.rates.data[properties.IBLI_ID]) {
         var premiumRate = ($scope.rates.data[properties.IBLI_ID][season + year] * 100).toFixed(2);
@@ -442,9 +445,9 @@ angular
           rateHTML +
           '<dl>' +
             '<dt>Next Sales Window:</dt>' +
-            '<dd>' + $scope.nextSalesWindow + ' ' + year + '</dd>' +
+            '<dd>' + nextSalesWindow + '</dd>' +
             '<dt>Next Potential Payout:</dt>' +
-            '<dd>' + $scope.nextPayout + ' ' + year + '</dd>' +
+            '<dd>' + nextPayout + '</dd>' +
             '<dt>Insurer:</dt>' +
             '<dd class="insurers">' +
               insurer +
