@@ -7,7 +7,8 @@
     "es5-shim": "~2.1.0",
     "leaflet": "~0.7.2",
     "angular-leaflet-directive": "~0.7.7",
-    "Leaflet.awesome-markers": "~2.0.2"
+    "Leaflet.awesome-markers": "~2.0.2",
+    "angular-loader": "latest"
   },
   "devDependencies": {
     "angular-apimock": "*",

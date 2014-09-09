@@ -346,6 +346,7 @@ angular
       $scope.controls.custom.push(periodSelect);
 
       $scope.savePDF = function() {
+        angular.element('#spinner').show();
         leafletData.getMap().then(function(map) {
 
           leafletImage(map, function(err, canvas) {
@@ -358,8 +359,8 @@ angular
             var data = {
               map: img.src,
               period: $scope.period.value,
-              map_height: img.height,
-              map_width: img.width
+              map_width: img.width,
+              map_height: img.height
             };
 
             $http({
@@ -370,7 +371,8 @@ angular
               },
               data: jQuery.param(data)
             }).success(function(pdf) {
-              $window.open(pdf, '_blank');
+              angular.element('#spinner').hide();
+              $window.location.href = pdf;
             });
           });
         });

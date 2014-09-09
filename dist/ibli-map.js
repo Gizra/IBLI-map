@@ -302,6 +302,7 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
       };
       $scope.controls.custom.push(periodSelect);
       $scope.savePDF = function () {
+        angular.element('#spinner').show();
         leafletData.getMap().then(function (map) {
           leafletImage(map, function (err, canvas) {
             var img = document.createElement('img');
@@ -312,8 +313,8 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
             var data = {
                 map: img.src,
                 period: $scope.period.value,
-                map_height: img.height,
-                map_width: img.width
+                map_width: img.width,
+                map_height: img.height
               };
             $http({
               method: 'POST',
@@ -321,7 +322,8 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
               headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
               data: jQuery.param(data)
             }).success(function (pdf) {
-              $window.open(pdf, '_blank');
+              angular.element('#spinner').hide();
+              $window.location.href = pdf;
             });
           });
         });
