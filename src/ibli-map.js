@@ -398,9 +398,9 @@ angular
       var rateHTML = '';
       var season = $scope.period.value.match(/L/) ? 'Aug/Sep' : 'Jan/Feb';
       var year = $scope.period.value.match(/\d{4}/)[0];
-      // Don't display the year in the popup if the period is in the past.
-      var nextSalesWindow = new Date().getFullYear() > year ? $scope.nextSalesWindow : $scope.nextSalesWindow + ' ' + year;
-      var nextPayout = new Date().getFullYear() > year ? $scope.nextPayout : $scope.nextPayout + ' ' + year;
+      // Adding year to popup.
+      var nextSalesWindow = $scope.nextSalesWindow + ' ' + year;
+      var nextPayout = $scope.nextPayout + ' ' + year;
       // Check if Division is in the csv file.
       if ($scope.rates.data[properties.IBLI_ID]) {
         var premiumRate = ($scope.rates.data[properties.IBLI_ID][season + year] * 100).toFixed(2);
@@ -442,7 +442,14 @@ angular
           '<div>'+
             '<strong>' + properties.IBLI_UNIT + '</strong>'+
           '</div>'+
-          rateHTML +
+          rateHTML;
+
+      // Show the payout / sales window / insurer information only if the year is current.
+      if (new Date().getFullYear() > year) {
+        marker.message += '</div>';
+      }
+      else {
+        marker.message +=
           '<dl>' +
             '<dt>Next Sales Window:</dt>' +
             '<dd>' + nextSalesWindow + '</dd>' +
@@ -450,10 +457,12 @@ angular
             '<dd>' + nextPayout + '</dd>' +
             '<dt>Insurer:</dt>' +
             '<dd class="insurers">' +
-              insurer +
+            insurer +
             '</dd>' +
           '</dl>' +
         '</div>';
+      }
+
       $timeout(function() {
         marker.focus = true;
       }, 350);
