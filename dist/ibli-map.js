@@ -302,7 +302,7 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
       $scope.controls.custom.push(periodSelect);
       // Create an Image from the map and send it to the server to save as PDF.
       $scope.savePDF = function () {
-        angular.element('#spinner').show();
+        $scope.loader = 1;
         // Get the map data.
         leafletData.getMap().then(function (map) {
           // Call leafletImage library and it will return the PNG image.
@@ -326,10 +326,8 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
               data: jQuery.param(data)
             }).success(function (pdf_path) {
               // Upon success Hide the Spinner GIF and show the link to download the PDF.
-              angular.element('#spinner').hide();
-              angular.element('#save_button').hide();
+              $scope.loader = 0;
               $scope.pdf_path = pdf_path;
-              angular.element('#download_link').show();
             });
           });
         });
