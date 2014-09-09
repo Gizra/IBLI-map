@@ -349,7 +349,11 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
       var rateHTML = '';
       var season = $scope.period.value.match(/L/) ? 'Aug/Sep' : 'Jan/Feb';
       var year = $scope.period.value.match(/\d{4}/)[0];
-      var premiumRate = ($scope.rates.data[properties.IBLI_ID][season + year] * 100).toFixed(2);
+      // Check if Division is in the csv file.
+      if ($scope.rates.data[properties.IBLI_ID]) {
+        var premiumRate = ($scope.rates.data[properties.IBLI_ID][season + year] * 100).toFixed(2);
+      }
+      // If no division, just hide the premium rate.
       if (premiumRate && premiumRate != 'NaN') {
         var rateHTML = '<div>' + 'Premium Rate: <strong>' + premiumRate + '%</strong>' + '</div>';
       }
@@ -378,7 +382,7 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
       }
       marker.lat = latLng.lat;
       marker.lng = latLng.lng;
-      marker.message = '<div>' + '<div>' + '<strong>' + properties.DIVI_WOR + '</strong>' + '</div>' + rateHTML + '<dl>' + '<dt>Next Sales Window:</dt>' + '<dd>' + $scope.nextSalesWindow + '</dd>' + '<dt>Next Potential Payout:</dt>' + '<dd>' + $scope.nextPayout + '</dd>' + '<dt>Insurer:</dt>' + '<dd class="insurers">' + insurer + '</dd>' + '</dl>' + '</div>';
+      marker.message = '<div>' + '<div>' + '<strong>' + properties.IBLI_UNIT + '</strong>' + '</div>' + rateHTML + '<dl>' + '<dt>Next Sales Window:</dt>' + '<dd>' + $scope.nextSalesWindow + ' ' + year + '</dd>' + '<dt>Next Potential Payout:</dt>' + '<dd>' + $scope.nextPayout + ' ' + year + '</dd>' + '<dt>Insurer:</dt>' + '<dd class="insurers">' + insurer + '</dd>' + '</dl>' + '</div>';
       $timeout(function () {
         marker.focus = true;
       }, 350);
