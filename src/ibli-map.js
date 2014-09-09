@@ -99,10 +99,10 @@ angular
         center: {
           lat: 1.1864,
           lng: 37.925,
-          zoom: 6
+          zoom: 7
         },
         defaults: {
-          minZoom: 6,
+          minZoom: 7,
           maxZoom: 9
         },
         tiles: {
@@ -289,7 +289,7 @@ angular
       }
     };
   })
-  .controller('MainCtrl', function ($scope, $http, $compile, ibliData, $timeout) {
+  .controller('MainCtrl', function ($scope, $attrs, $http, $compile, ibliData, $timeout, leafletData) {
 
     // Custom control for displaying name of division and percent on hover.
     $scope.controls = { custom: [] };
@@ -337,12 +337,50 @@ angular
       $scope.rates = data;
     });
 
-    var periodSelect = L.control();
-    periodSelect.setPosition('topright');
-    periodSelect.onAdd = function () {
-      return $compile(angular.element('<select ng-model="period" ng-options="period.label for period in periods track by period.value"></select>'))($scope)[0];
-    };
-    $scope.controls.custom.push(periodSelect);
+    if ($attrs.periodList == "true") {
+      var periodSelect = L.control();
+      periodSelect.setPosition('topright');
+      periodSelect.onAdd = function () {
+        return $compile(angular.element('<select ng-model="period" ng-options="period.label for period in periods track by period.value"></select>'))($scope)[0];
+      };
+      $scope.controls.custom.push(periodSelect);
+
+      // Create an Image from the map and send it to the server to save as PDF.
+      $scope.savePDF = function() {
+        $scope.loader = 1;
+        // Get the map data.
+        leafletData.getMap().then(function(map) {
+          // Call leafletImage library and it will return the PNG image.
+          leafletImage(map, function(err, canvas) {
+            var img = document.createElement('img');
+            var dimensions = map.getSize();
+            img.width = dimensions.x;
+            img.height = dimensions.y;
+            img.src = canvas.toDataURL();
+
+            var data = {
+              map: img.src,
+              period: $scope.period.value,
+              map_width: img.width,
+              map_height: img.height
+            };
+            // Send the image to drupal for saving as PDF.
+            $http({
+              method: 'POST',
+              url: 'pim/save-pdf',
+              headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+              },
+              data: jQuery.param(data)
+            }).success(function(pdf_path) {
+              // Upon success Hide the Spinner GIF and show the link to download the PDF.
+              $scope.loader = 0;
+              $scope.pdf_path = pdf_path;
+            });
+          });
+        });
+      };
+    }
 
     // When hovering a division.
     $scope.$on("leafletDirectiveMap.geojsonMouseover", function(ev, leafletEvent) {
@@ -358,7 +396,14 @@ angular
       var rateHTML = '';
       var season = $scope.period.value.match(/L/) ? 'Aug/Sep' : 'Jan/Feb';
       var year = $scope.period.value.match(/\d{4}/)[0];
-      var premiumRate = ($scope.rates.data[properties.IBLI_ID][season + year] * 100).toFixed(2);
+      // Adding year to popup.
+      var nextSalesWindow = $scope.nextSalesWindow + ' ' + year;
+      var nextPayout = $scope.nextPayout + ' ' + year;
+      // Check if Division is in the csv file.
+      if ($scope.rates.data[properties.IBLI_ID]) {
+        var premiumRate = ($scope.rates.data[properties.IBLI_ID][season + year] * 100).toFixed(2);
+      }
+      // If no division, just hide the premium rate.
       if (premiumRate && premiumRate != 'NaN') {
         var rateHTML =
           '<div>'+
@@ -393,20 +438,29 @@ angular
       marker.message =
         '<div>' +
           '<div>'+
-            '<strong>' + properties.DIVI_WOR + '</strong>'+
+            '<strong>' + properties.IBLI_UNIT + '</strong>'+
           '</div>'+
-          rateHTML +
+          rateHTML;
+
+      // Show the payout / sales window / insurer information only if the year is current.
+      if (new Date().getFullYear() > year) {
+        marker.message += '</div>';
+      }
+      else {
+        marker.message +=
           '<dl>' +
             '<dt>Next Sales Window:</dt>' +
-            '<dd>' + $scope.nextSalesWindow + '</dd>' +
+            '<dd>' + nextSalesWindow + '</dd>' +
             '<dt>Next Potential Payout:</dt>' +
-            '<dd>' + $scope.nextPayout + '</dd>' +
+            '<dd>' + nextPayout + '</dd>' +
             '<dt>Insurer:</dt>' +
             '<dd class="insurers">' +
-              insurer +
+            insurer +
             '</dd>' +
           '</dl>' +
         '</div>';
+      }
+
       $timeout(function() {
         marker.focus = true;
       }, 350);
