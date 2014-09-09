@@ -289,7 +289,7 @@ angular
       }
     };
   })
-  .controller('MainCtrl', function ($scope, $attrs, $http, $compile, ibliData, $timeout, leafletData, $window) {
+  .controller('MainCtrl', function ($scope, $attrs, $http, $compile, ibliData, $timeout, leafletData) {
 
     // Custom control for displaying name of division and percent on hover.
     $scope.controls = { custom: [] };
