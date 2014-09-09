@@ -258,8 +258,7 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
   'ibliData',
   '$timeout',
   'leafletData',
-  '$window',
-  function ($scope, $attrs, $http, $compile, ibliData, $timeout, leafletData, $window) {
+  function ($scope, $attrs, $http, $compile, ibliData, $timeout, leafletData) {
     // Custom control for displaying name of division and percent on hover.
     $scope.controls = { custom: [] };
     // Set marker potions.
