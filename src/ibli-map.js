@@ -102,7 +102,7 @@ angular
           zoom: 7
         },
         defaults: {
-          minZoom: 6,
+          minZoom: 7,
           maxZoom: 9
         },
         tiles: {

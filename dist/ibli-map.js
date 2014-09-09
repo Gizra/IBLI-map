@@ -77,7 +77,7 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
           zoom: 7
         },
         defaults: {
-          minZoom: 6,
+          minZoom: 7,
           maxZoom: 9
         },
         tiles: {
