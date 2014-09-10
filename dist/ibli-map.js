@@ -258,7 +258,10 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
   'ibliData',
   '$timeout',
   'leafletData',
-  function ($scope, $attrs, $http, $compile, ibliData, $timeout, leafletData) {
+  '$window',
+  function ($scope, $attrs, $http, $compile, ibliData, $timeout, leafletData, $window) {
+    // Set images path imported from Drupal.
+    $scope.images_path = $window.Drupal.settings.ibli_general.iblimap_images_path;
     // Custom control for displaying name of division and percent on hover.
     $scope.controls = { custom: [] };
     // Set marker potions.
@@ -293,6 +296,13 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
     ibliData.getPremiumRates().then(function (data) {
       $scope.rates = data;
     });
+    // Add legend index to the bottom-right corner of the map.
+    var legend = L.control();
+    legend.setPosition('bottomright');
+    legend.onAdd = function () {
+      return $compile(angular.element('<img ng-src="' + $scope.images_path + '/legend.png"/>'))($scope)[0];
+    };
+    $scope.controls.custom.push(legend);
     if ($attrs.periodList == 'true') {
       var periodSelect = L.control();
       periodSelect.setPosition('topright');
