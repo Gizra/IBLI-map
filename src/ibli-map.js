@@ -342,7 +342,7 @@ angular
 
     // Add legend index to the bottom-right corner of the map.
     var legend = L.control();
-    legend.setPosition('bottomright');
+    legend.setPosition('bottomleft');
     legend.onAdd = function () {
       return $compile(angular.element('<img ng-src="' + $scope.images_path + '/legend.png"/>'))($scope)[0];
     };
