@@ -291,16 +291,10 @@ angular
   })
   .controller('MainCtrl', function ($scope, $attrs, $http, $compile, ibliData, $timeout, leafletData, $window) {
 
-    // Set images path imported from Drupal.
-    $scope.images_path = $window.Drupal.settings.ibli_general.iblimap_images_path;
-
-    // Custom control for displaying name of division and percent on hover.
-    $scope.controls = { custom: [] };
-
     // Set marker potions.
     angular.extend($scope, {
       markers: {
-        kenya: {
+        province: {
           lat: 1.1864,
           lng: 37.925,
           message: '',
@@ -310,7 +304,18 @@ angular
       },
       defaults: {
         scrollWheelZoom: false
-      }
+      },
+      latLng: {
+        lat: 1.1864,
+        lng: 37.925
+      },
+      message: '',
+      images_path: $window.Drupal.settings.ibli_general.iblimap_images_path,
+      // Custom control for displaying name of division and percent on hover.
+      controls: {
+        custom: []
+      },
+      calculator: 0
     },
     ibliData.getMapOptions()
     );
@@ -427,13 +432,13 @@ angular
       layer.bringToFront();
       // Where there's no known insurer, display TBD.
       var insurer = 'TBD';
-      var latLng = leafletEvent.latlng;
+      $scope.latLng = leafletEvent.latlng;
       var properties = layer.feature.properties;
-      var marker = $scope.markers.kenya;
       // Display the premium rate.
-      var rateHTML = '';
       var season = $scope.period.value.match(/L/) ? 'Aug/Sep' : 'Jan/Feb';
       var year = $scope.period.value.match(/\d{4}/)[0];
+      $scope.calculator = 0;
+      var rate_calculator = '<a href ng-click="calculator = !calculator">Calculate your rate</a><div ng-show="calculator">1</div>';
       // Check if Division is in the csv file.
       if ($scope.rates.data[properties.IBLI_ID]) {
         var premiumRate = ($scope.rates.data[properties.IBLI_ID][season + year] * 100).toFixed(2);
@@ -446,7 +451,6 @@ angular
           '</div>';
       }
       // End of Calculating the premium rate.
-      marker.focus = false;
       switch (properties.DISTRICT) {
         case 'WAJIR':
         case 'MANDERA':
@@ -468,9 +472,7 @@ angular
           insurer = 'TBD';
           break;
       }
-      marker.lat = latLng.lat;
-      marker.lng = latLng.lng;
-      marker.message =
+      $scope.message =
         '<div>' +
           '<div>'+
             '<strong>' + properties.IBLI_UNIT + '</strong>'+
@@ -479,22 +481,28 @@ angular
 
       // Show the payout / sales window / insurer information only if the year is current.
       if (new Date().getFullYear() > year) {
-        marker.message += '</div>';
+        $scope.message += '</div>';
       }
       else {
-        marker.message +=
+        $scope.message +=
           '<dl>' +
             '<dt>Insurer:</dt>' +
             '<dd class="insurers">' +
             insurer +
             '</dd>' +
           '</dl>' +
+          rate_calculator +
         '</div>';
       }
+    });
 
-      $timeout(function() {
-        marker.focus = true;
-      }, 350);
+    $scope.$on("leafletDirectiveMap.click", function() {
+      leafletData.getMap().then(function(map) {
+        L.popup()
+          .setLatLng([$scope.latLng.lat, $scope.latLng.lng])
+          .setContent($scope.message)
+          .openOn(map);
+      });
     });
 
     // Reload the map when the period is changed.
