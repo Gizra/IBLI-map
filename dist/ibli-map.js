@@ -259,7 +259,8 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
   '$timeout',
   'leafletData',
   '$window',
-  function ($scope, $attrs, $http, $compile, ibliData, $timeout, leafletData, $window) {
+  '$log',
+  function ($scope, $attrs, $http, $compile, ibliData, $timeout, leafletData, $window, $log) {
     // Set images path imported from Drupal.
     $scope.images_path = $window.Drupal.settings.ibli_general.iblimap_images_path;
     // Custom control for displaying name of division and percent on hover.
@@ -290,13 +291,11 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
         $scope.geojson = data;
       });
     });
-    $scope.nextSalesWindow = ibliData.getSeason() == 'LRLD' ? 'Aug/Sept' : 'Jan/Feb';
-    $scope.nextPayout = ibliData.getSeason() == 'LRLD' ? 'March' : 'October';
     // Get divIdToIndex data.
     ibliData.getPremiumRates().then(function (data) {
       $scope.rates = data;
     });
-    // Add legend index to the bottom-right corner of the map.
+    // Legend index in the bottom-left corner of the map.
     var legend = L.control();
     legend.setPosition('bottomleft');
     legend.onAdd = function () {
@@ -343,6 +342,37 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
         });
       };
     }
+    // Next potential payouts and sales.
+    if ($attrs.periodList == 'false') {
+      var now = new Date();
+      var month = 8;
+      var year = now.getFullYear();
+      var next_year = now.getFullYear() + 1;
+      $scope.payouts_sales = {};
+      switch (true) {
+      case month <= 3:
+        $scope.payouts_sales.new_payout = 'October ' + year;
+        $scope.payouts_sales.cur_payout = 'March ' + year;
+        $scope.payouts_sales.sales_date = 'Aug/Sept ' + year;
+        break;
+      case month > 3 && month < 10:
+        $scope.payouts_sales.new_payout = 'March ' + next_year;
+        $scope.payouts_sales.cur_payout = 'October ' + year;
+        $scope.payouts_sales.sales_date = 'Aug/Sep ' + year;
+        break;
+      case month >= 10:
+        $scope.payouts_sales.new_payout = 'October ' + next_year;
+        $scope.payouts_sales.cur_payout = 'March ' + next_year;
+        $scope.payouts_sales.sales_date = 'Jan/Feb ' + next_year;
+        break;
+      }
+      var payouts = L.control();
+      payouts.setPosition('topright');
+      payouts.onAdd = function () {
+        return $compile(angular.element('<payouts payouts_sales="{{payouts_sales}}"></payouts>'))($scope)[0];
+      };
+      $scope.controls.custom.push(payouts);
+    }
     // When hovering a division.
     $scope.$on('leafletDirectiveMap.geojsonMouseover', function (ev, leafletEvent) {
       var layer = leafletEvent.target;
@@ -357,9 +387,6 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
       var rateHTML = '';
       var season = $scope.period.value.match(/L/) ? 'Aug/Sep' : 'Jan/Feb';
       var year = $scope.period.value.match(/\d{4}/)[0];
-      // Adding year to popup.
-      var nextSalesWindow = $scope.nextSalesWindow + ' ' + year;
-      var nextPayout = $scope.nextPayout + ' ' + year;
       // Check if Division is in the csv file.
       if ($scope.rates.data[properties.IBLI_ID]) {
         var premiumRate = ($scope.rates.data[properties.IBLI_ID][season + year] * 100).toFixed(2);
@@ -398,7 +425,7 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
       if (new Date().getFullYear() > year) {
         marker.message += '</div>';
       } else {
-        marker.message += '<dl>' + '<dt>Next Sales Window:</dt>' + '<dd>' + nextSalesWindow + '</dd>' + '<dt>Next Potential Payout:</dt>' + '<dd>' + nextPayout + '</dd>' + '<dt>Insurer:</dt>' + '<dd class="insurers">' + insurer + '</dd>' + '</dl>' + '</div>';
+        marker.message += '<dl>' + '<dt>Insurer:</dt>' + '<dd class="insurers">' + insurer + '</dd>' + '</dl>' + '</div>';
       }
       $timeout(function () {
         marker.focus = true;
@@ -414,4 +441,11 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
       });
     });
   }
-]);
+]).directive('payouts', function () {
+  var path = Drupal.settings.ibli_general.iblimap_library_path;
+  return {
+    templateUrl: path + '/templates/payouts.html',
+    restrict: 'EA',
+    scope: true
+  };
+});
