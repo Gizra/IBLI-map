@@ -289,7 +289,7 @@ angular
       }
     };
   })
-  .controller('MainCtrl', function ($scope, $attrs, $http, $compile, ibliData, $timeout, leafletData, $window, $log) {
+  .controller('MainCtrl', function ($scope, $attrs, $http, $compile, ibliData, $timeout, leafletData, $window) {
 
     // Set images path imported from Drupal.
     $scope.images_path = $window.Drupal.settings.ibli_general.iblimap_images_path;
@@ -346,13 +346,6 @@ angular
     $scope.controls.custom.push(legend);
 
     if ($attrs.periodList == "true") {
-      var periodSelect = L.control();
-      periodSelect.setPosition('topright');
-      periodSelect.onAdd = function () {
-        return $compile(angular.element('<select ng-model="period" ng-options="period.label for period in periods track by period.value"></select>'))($scope)[0];
-      };
-      $scope.controls.custom.push(periodSelect);
-
       // Create an Image from the map and send it to the server to save as PDF.
       $scope.savePDF = function() {
         $scope.loader = 1;

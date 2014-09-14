@@ -303,12 +303,6 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
     };
     $scope.controls.custom.push(legend);
     if ($attrs.periodList == 'true') {
-      var periodSelect = L.control();
-      periodSelect.setPosition('topright');
-      periodSelect.onAdd = function () {
-        return $compile(angular.element('<select ng-model="period" ng-options="period.label for period in periods track by period.value"></select>'))($scope)[0];
-      };
-      $scope.controls.custom.push(periodSelect);
       // Create an Image from the map and send it to the server to save as PDF.
       $scope.savePDF = function () {
         $scope.loader = 1;
@@ -345,15 +339,20 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
     // Next potential payouts and sales.
     if ($attrs.periodList == 'false') {
       var now = new Date();
-      var month = 8;
+      var month = now.getMonth();
       var year = now.getFullYear();
       var next_year = now.getFullYear() + 1;
       $scope.payouts_sales = {};
       switch (true) {
-      case month <= 3:
+      case month < 3:
         $scope.payouts_sales.new_payout = 'October ' + year;
         $scope.payouts_sales.cur_payout = 'March ' + year;
-        $scope.payouts_sales.sales_date = 'Aug/Sept ' + year;
+        $scope.payouts_sales.sales_date = 'Jan/Feb ' + year;
+        break;
+      case month == 3:
+        $scope.payouts_sales.new_payout = 'October ' + year;
+        $scope.payouts_sales.cur_payout = 'March ' + year;
+        $scope.payouts_sales.sales_date = 'Aug/Sep ' + year;
         break;
       case month > 3 && month < 10:
         $scope.payouts_sales.new_payout = 'March ' + next_year;
