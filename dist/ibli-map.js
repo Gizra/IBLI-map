@@ -279,7 +279,10 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
       message: '',
       images_path: $window.Drupal.settings.ibli_general.iblimap_images_path,
       controls: { custom: [] },
-      calculator: 0
+      premiumRate: 0,
+      calculatedData: 0,
+      calculator: false,
+      calculatorData: {}
     }, ibliData.getMapOptions());
     // Get divIdToIndex data.
     ibliData.getDivIdToIndex().then(function (data) {
@@ -385,18 +388,16 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
       $scope.latLng = leafletEvent.latlng;
       var properties = layer.feature.properties;
       // Display the premium rate.
-      var rateHTML = '';
       var season = $scope.period.value.match(/L/) ? 'Aug/Sep' : 'Jan/Feb';
       var year = $scope.period.value.match(/\d{4}/)[0];
-      $scope.calculator = 0;
-      var rate_calculator = '<a href ng-click="calculator = !calculator">Calculate your rate</a><div ng-show="calculator">1</div>';
       // Check if Division is in the csv file.
       if ($scope.rates.data[properties.IBLI_ID]) {
-        var premiumRate = ($scope.rates.data[properties.IBLI_ID][season + year] * 100).toFixed(2);
+        $scope.premiumRate = ($scope.rates.data[properties.IBLI_ID][season + year] * 100).toFixed(2);
       }
+      var rate_calculator = $compile(angular.element('<rate-calculator calculator="{{calculator}}" calculatorData="{{calculatorData}}" premiumRate="{{premiumRate}}"></rate-calculator>'))($scope)[0];
       // If no division, just hide the premium rate.
-      if (premiumRate && premiumRate != 'NaN') {
-        var rateHTML = '<div>' + 'Premium Rate: <strong>' + premiumRate + '%</strong>' + '</div>';
+      if ($scope.premiumRate && $scope.premiumRate != 'NaN') {
+        var rateHTML = '<div>' + 'Premium Rate: <strong>' + $scope.premiumRate + '%</strong>' + '</div>';
       }
       // End of Calculating the premium rate.
       switch (properties.DISTRICT) {
@@ -420,20 +421,23 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
         insurer = 'TBD';
         break;
       }
-      $scope.message = '<div>' + '<div>' + '<strong>' + properties.IBLI_UNIT + '</strong>' + '</div>' + rateHTML;
+      var message = '<div>' + '<div>' + '<strong>' + properties.IBLI_UNIT + '</strong>' + '</div>' + rateHTML;
       // Show the payout / sales window / insurer information only if the year is current.
       if (new Date().getFullYear() > year) {
-        $scope.message += '</div>';
+        message += '</div>';
       } else {
-        $scope.message += '<dl>' + '<dt>Insurer:</dt>' + '<dd class="insurers">' + insurer + '</dd>' + '</dl>' + rate_calculator + '</div>';
+        message += '<dl>' + '<dt>Insurer:</dt>' + '<dd class="insurers">' + insurer + '</dd>' + '</dl>' + '</div>';
       }
-    });
-    $scope.$on('leafletDirectiveMap.click', function () {
+      $scope.message = document.createElement('div');
+      $scope.message.innerHTML = message;
+      $scope.message.appendChild(rate_calculator);
       leafletData.getMap().then(function (map) {
-        L.popup().setLatLng([
-          $scope.latLng.lat,
-          $scope.latLng.lng
-        ]).setContent($scope.message).openOn(map);
+        $timeout(function () {
+          L.popup().setLatLng([
+            $scope.latLng.lat,
+            $scope.latLng.lng
+          ]).setContent($scope.message).openOn(map);
+        }, 500);
       });
     });
     // Reload the map when the period is changed.
@@ -452,5 +456,19 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
     templateUrl: path + '/templates/payouts.html',
     restrict: 'EA',
     scope: true
+  };
+}).directive('rateCalculator', function () {
+  var path = Drupal.settings.ibli_general.iblimap_library_path;
+  return {
+    templateUrl: path + '/templates/rate-calculator.html',
+    restrict: 'EA',
+    scope: true,
+    link: function postLink(scope, element, attrs) {
+      scope.calculateRate = function () {
+        scope.calculator = false;
+        var data = scope.calculatorData;
+        scope.calculatedData = (data.cows * 25000 + data.camels * 35000 + data.sheep_goats * 2500) * scope.premiumRate;
+      };
+    }
   };
 });

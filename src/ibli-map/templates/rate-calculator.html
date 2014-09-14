@@ -1,0 +1,14 @@
+<div>
+  <a href ng-click="calculator = !calculator">Calculate your rate</a>
+  <div ng-show="calculator">
+    <form ng-submit="calculateRate()">
+      <input type="text" placeholder="Cows" ng-model="calculatorData.cows" name="cows" required>
+      <input type="text" placeholder="Camels" ng-model="calculatorData.camels" name="camels" required>
+      <input type="text" placeholder="Sheep & Goats" ng-model="calculatorData.sheep_goats" name="sheep_goats" required>
+      <input type="submit" value="Calculate">
+    </form>
+  </div>
+  <div ng-show="calculatedData">
+    {{calculatedData}}
+  </div>
+</div>
