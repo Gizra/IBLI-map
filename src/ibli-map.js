@@ -316,7 +316,7 @@ angular
         custom: []
       },
       premiumRate: 0,
-      calculatedData: 0,
+      calculatedSum: 0,
       calculator: false,
       calculatorData: {}
     },
@@ -446,7 +446,7 @@ angular
         $scope.premiumRate = ($scope.rates.data[properties.IBLI_ID][season + year] * 100).toFixed(2);
       }
 
-      var rate_calculator = $compile(angular.element('<rate-calculator calculator="{{calculator}}" calculatorData="{{calculatorData}}" premiumRate="{{premiumRate}}"></rate-calculator>'))($scope)[0];
+      var rate_calculator = $compile(angular.element('<rate-calculator></rate-calculator>'))($scope)[0];
       // If no division, just hide the premium rate.
       if ($scope.premiumRate && $scope.premiumRate != 'NaN') {
         var rateHTML =
@@ -477,7 +477,7 @@ angular
           break;
       }
       var message =
-        '<div>' +
+        '<div id="popuop-data">' +
           '<div>'+
             '<strong>' + properties.IBLI_UNIT + '</strong>'+
           '</div>'+
@@ -536,10 +536,15 @@ angular
       restrict: 'EA',
       scope: true,
       link: function postLink(scope, element, attrs) {
+        scope.hideData = function() {
+          angular.element('#popuop-data').toggle();
+          scope.calculator = !scope.calculator;
+        },
         scope.calculateRate = function() {
           scope.calculator = false;
+          angular.element('#popuop-data').toggle();
           var data = scope.calculatorData;
-          scope.calculatedData = (data.cows * 25000 + data.camels * 35000 + data.sheep_goats*2500) * scope.premiumRate;
+          scope.calculatedSum = (data.cows * 25000 + data.camels * 35000 + data.sheep_goats*2500) * (scope.premiumRate / 100);
         }
       }
     };

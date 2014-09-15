@@ -1,14 +1,25 @@
 <div>
-  <a href ng-click="calculator = !calculator">Calculate your rate</a>
+  <a href ng-click="hideData()">{{calculator ? 'Hide calculator' : 'Calculate your rate'}}</a>
   <div ng-show="calculator">
-    <form ng-submit="calculateRate()">
-      <input type="text" placeholder="Cows" ng-model="calculatorData.cows" name="cows" required>
-      <input type="text" placeholder="Camels" ng-model="calculatorData.camels" name="camels" required>
-      <input type="text" placeholder="Sheep & Goats" ng-model="calculatorData.sheep_goats" name="sheep_goats" required>
-      <input type="submit" value="Calculate">
+    <form ng-submit="calculateRate()" class="calculator-form">
+      <div class="input-group">
+        <span class="input-group-addon cow"></span>
+        <input type="number" min="0" placeholder="Cows" ng-model="calculatorData.cows" name="cows" required>
+      </div>
+      <div class="input-group">
+        <span class="input-group-addon camel"></span>
+        <input type="number" min="0" placeholder="Camels" ng-model="calculatorData.camels" name="camels" required>
+      </div>
+      <div class="input-group">
+        <span class="input-group-addon goat"></span>
+        <input type="number" min="0" placeholder="Sheep & Goats" ng-model="calculatorData.sheep_goats" name="sheep_goats" required>
+      </div>
+      <div class="input-group">
+        <input type="submit" value="Calculate">
+      </div>
     </form>
   </div>
-  <div ng-show="calculatedData">
-    {{calculatedData}}
+  <div ng-show="calculatedSum && !calculator">
+    Rate calculation is: {{calculatedSum | number : 2}}
   </div>
 </div>
