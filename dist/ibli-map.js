@@ -396,10 +396,13 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
       if ($scope.rates.data[properties.IBLI_ID]) {
         $scope.premiumRate = ($scope.rates.data[properties.IBLI_ID][season + year] * 100).toFixed(2);
       }
-      var rate_calculator = $compile(angular.element('<rate-calculator></rate-calculator>'))($scope)[0];
+      // Define empty html for PIM.
+      var rateHTML = '';
+      var rate_calculator = '';
       // If no division, just hide the premium rate.
       if ($scope.premiumRate && $scope.premiumRate != 'NaN') {
-        var rateHTML = '<div>' + 'Premium Rate: <strong>' + $scope.premiumRate + '%</strong>' + '</div>';
+        rateHTML = '<div>' + 'Premium Rate: <strong>' + $scope.premiumRate + '%</strong>' + '</div>';
+        rate_calculator = $compile(angular.element('<rate-calculator></rate-calculator>'))($scope)[0];
       }
       // End of Calculating the premium rate.
       switch (properties.DISTRICT) {
