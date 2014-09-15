@@ -255,10 +255,11 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
   '$attrs',
   '$http',
   '$compile',
+  '$timeout',
   'ibliData',
   'leafletData',
   '$window',
-  function ($scope, $attrs, $http, $compile, ibliData, leafletData, $window) {
+  function ($scope, $attrs, $http, $compile, $timeout, ibliData, leafletData, $window) {
     // Set marker potions.
     angular.extend($scope, {
       markers: {
@@ -384,9 +385,9 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
       layer.bringToFront();
       // Where there's no known insurer, display TBD.
       var insurer = 'TBD';
-      // Get the center of the layer for the popup.
-      console.log(ev.layer.getLatLng());
+      // Get the location of the layer for the popup.
       $scope.latLng = leafletEvent.latlng;
+      // Get the properties of the layer for the popup.
       var properties = layer.feature.properties;
       // Display the premium rate.
       var season = $scope.period.value.match(/L/) ? 'Aug/Sep' : 'Jan/Feb';
@@ -432,10 +433,16 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
       $scope.message = document.createElement('div');
       $scope.message.innerHTML = message;
       $scope.message.appendChild(rate_calculator);
-      L.popup().setLatLng([
-        $scope.latLng.lat,
-        $scope.latLng.lng
-      ]).setContent($scope.message).openOn(layer._map);
+    });
+    $scope.$on('leafletDirectiveMap.geojsonClick', function () {
+      leafletData.getMap().then(function (map) {
+        $timeout(function () {
+          L.popup().setLatLng([
+            $scope.latLng.lat,
+            $scope.latLng.lng
+          ]).setContent($scope.message).openOn(map);
+        }, 200);
+      });
     });
     // Reload the map when the period is changed.
     // TODO: Update the map without reloading the geoJson file.
