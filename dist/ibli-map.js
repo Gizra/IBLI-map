@@ -256,10 +256,9 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
   '$http',
   '$compile',
   'ibliData',
-  '$timeout',
   'leafletData',
   '$window',
-  function ($scope, $attrs, $http, $compile, ibliData, $timeout, leafletData, $window) {
+  function ($scope, $attrs, $http, $compile, ibliData, leafletData, $window) {
     // Set marker potions.
     angular.extend($scope, {
       markers: {
@@ -374,7 +373,7 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
       var payouts = L.control();
       payouts.setPosition('topright');
       payouts.onAdd = function () {
-        return $compile(angular.element('<payouts payouts_sales="{{payouts_sales}}"></payouts>'))($scope)[0];
+        return $compile(angular.element('<payouts></payouts>'))($scope)[0];
       };
       $scope.controls.custom.push(payouts);
     }
@@ -385,6 +384,8 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
       layer.bringToFront();
       // Where there's no known insurer, display TBD.
       var insurer = 'TBD';
+      // Get the center of the layer for the popup.
+      console.log(ev.layer.getLatLng());
       $scope.latLng = leafletEvent.latlng;
       var properties = layer.feature.properties;
       // Display the premium rate.
@@ -431,14 +432,10 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
       $scope.message = document.createElement('div');
       $scope.message.innerHTML = message;
       $scope.message.appendChild(rate_calculator);
-      leafletData.getMap().then(function (map) {
-        $timeout(function () {
-          L.popup().setLatLng([
-            $scope.latLng.lat,
-            $scope.latLng.lng
-          ]).setContent($scope.message).openOn(map);
-        }, 500);
-      });
+      L.popup().setLatLng([
+        $scope.latLng.lat,
+        $scope.latLng.lng
+      ]).setContent($scope.message).openOn(layer._map);
     });
     // Reload the map when the period is changed.
     // TODO: Update the map without reloading the geoJson file.
@@ -463,15 +460,21 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
     templateUrl: path + '/templates/rate-calculator.html',
     restrict: 'EA',
     scope: true,
-    link: function postLink(scope, element, attrs) {
+    link: function postLink(scope) {
       scope.hideData = function () {
+        // Show/hide the popup data.
         angular.element('#popuop-data').toggle();
+        // Show/hide the calculator form.
         scope.calculator = !scope.calculator;
       }, scope.calculateRate = function () {
-        scope.calculator = false;
-        angular.element('#popuop-data').toggle();
+        // Get the input values.
         var data = scope.calculatorData;
-        scope.calculatedSum = (data.cows * 25000 + data.camels * 35000 + data.sheep_goats * 2500) * (scope.premiumRate / 100);
+        // Put 0 if one of the inputs is empty.
+        var cows = data.cows ? data.cows : 0;
+        var camels = data.camels ? data.camels : 0;
+        var sheep_goats = data.sheep_goats ? data.sheep_goats : 0;
+        // Calculate the rate.
+        scope.calculatedSum = (cows * 25000 + camels * 35000 + sheep_goats * 2500) * (scope.premiumRate / 100);
       };
     }
   };
