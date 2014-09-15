@@ -289,18 +289,12 @@ angular
       }
     };
   })
-  .controller('MainCtrl', function ($scope, $attrs, $http, $compile, ibliData, $timeout, leafletData, $window) {
-
-    // Set images path imported from Drupal.
-    $scope.images_path = $window.Drupal.settings.ibli_general.iblimap_images_path;
-
-    // Custom control for displaying name of division and percent on hover.
-    $scope.controls = { custom: [] };
+  .controller('MainCtrl', function ($scope, $attrs, $http, $compile, $timeout, ibliData, leafletData, $window) {
 
     // Set marker potions.
     angular.extend($scope, {
       markers: {
-        kenya: {
+        province: {
           lat: 1.1864,
           lng: 37.925,
           message: '',
@@ -310,7 +304,22 @@ angular
       },
       defaults: {
         scrollWheelZoom: false
-      }
+      },
+      latLng: {
+        lat: 1.1864,
+        lng: 37.925
+      },
+      message: '',
+      images_path: $window.Drupal.settings.ibli_general.iblimap_images_path,
+      // Custom control for displaying name of division and percent on hover.
+      controls: {
+        custom: []
+      },
+      // Params for the rate calculator.
+      premiumRate: 0,
+      calculatedSum: 0,
+      calculator: false,
+      calculatorData: {}
     },
     ibliData.getMapOptions()
     );
@@ -415,7 +424,7 @@ angular
       var payouts = L.control();
       payouts.setPosition('topright');
       payouts.onAdd = function () {
-        return $compile(angular.element('<payouts payouts_sales="{{payouts_sales}}"></payouts>'))($scope)[0];
+        return $compile(angular.element('<payouts></payouts>'))($scope)[0];
       };
       $scope.controls.custom.push(payouts);
     }
@@ -427,26 +436,29 @@ angular
       layer.bringToFront();
       // Where there's no known insurer, display TBD.
       var insurer = 'TBD';
-      var latLng = leafletEvent.latlng;
+      // Get the location of the layer for the popup.
+      $scope.latLng = leafletEvent.latlng;
+
+      // Get the properties of the layer for the popup.
       var properties = layer.feature.properties;
-      var marker = $scope.markers.kenya;
       // Display the premium rate.
-      var rateHTML = '';
       var season = $scope.period.value.match(/L/) ? 'Aug/Sep' : 'Jan/Feb';
       var year = $scope.period.value.match(/\d{4}/)[0];
       // Check if Division is in the csv file.
+
       if ($scope.rates.data[properties.IBLI_ID]) {
-        var premiumRate = ($scope.rates.data[properties.IBLI_ID][season + year] * 100).toFixed(2);
+        $scope.premiumRate = ($scope.rates.data[properties.IBLI_ID][season + year] * 100).toFixed(2);
       }
+
+      var rate_calculator = $compile(angular.element('<rate-calculator></rate-calculator>'))($scope)[0];
       // If no division, just hide the premium rate.
-      if (premiumRate && premiumRate != 'NaN') {
+      if ($scope.premiumRate && $scope.premiumRate != 'NaN') {
         var rateHTML =
           '<div>'+
-            'Premium Rate: <strong>' + premiumRate + '%</strong>'+
+            'Premium Rate: <strong>' + $scope.premiumRate + '%</strong>'+
           '</div>';
       }
       // End of Calculating the premium rate.
-      marker.focus = false;
       switch (properties.DISTRICT) {
         case 'WAJIR':
         case 'MANDERA':
@@ -468,10 +480,8 @@ angular
           insurer = 'TBD';
           break;
       }
-      marker.lat = latLng.lat;
-      marker.lng = latLng.lng;
-      marker.message =
-        '<div>' +
+      var message =
+        '<div id="popuop-data">' +
           '<div>'+
             '<strong>' + properties.IBLI_UNIT + '</strong>'+
           '</div>'+
@@ -479,10 +489,10 @@ angular
 
       // Show the payout / sales window / insurer information only if the year is current.
       if (new Date().getFullYear() > year) {
-        marker.message += '</div>';
+        message += '</div>';
       }
       else {
-        marker.message +=
+        message +=
           '<dl>' +
             '<dt>Insurer:</dt>' +
             '<dd class="insurers">' +
@@ -491,10 +501,20 @@ angular
           '</dl>' +
         '</div>';
       }
+      $scope.message = document.createElement('div');
+      $scope.message.innerHTML = message;
+      $scope.message.appendChild(rate_calculator);
+    });
 
-      $timeout(function() {
-        marker.focus = true;
-      }, 350);
+    $scope.$on("leafletDirectiveMap.geojsonClick", function() {
+      leafletData.getMap().then(function(map) {
+        $timeout(function() {
+          L.popup()
+            .setLatLng([$scope.latLng.lat, $scope.latLng.lng])
+            .setContent($scope.message)
+            .openOn(map)
+        }, 200);
+      });
     });
 
     // Reload the map when the period is changed.
@@ -513,5 +533,32 @@ angular
       templateUrl: path + '/templates/payouts.html',
       restrict: 'EA',
       scope: true
+    };
+  })
+  .directive('rateCalculator', function () {
+    var path = Drupal.settings.ibli_general.iblimap_library_path;
+    return {
+      templateUrl: path + '/templates/rate-calculator.html',
+      restrict: 'EA',
+      scope: true,
+      link: function postLink(scope) {
+        scope.hideData = function() {
+          // Show/hide the popup data.
+          angular.element('#popuop-data').toggle();
+          // Show/hide the calculator form.
+          scope.calculator = !scope.calculator;
+        },
+        scope.calculateRate = function() {
+          // Get the input values.
+          var data = scope.calculatorData;
+          // Put 0 if one of the inputs is empty.
+          var cows = data.cows ? data.cows : 0;
+          var camels = data.camels ? data.camels : 0;
+          var sheep_goats = data.sheep_goats ? data.sheep_goats : 0;
+
+          // Calculate the rate.
+          scope.calculatedSum = (cows * 25000 + camels * 35000 + sheep_goats * 2500) * (scope.premiumRate / 100);
+        }
+      }
     };
   });
