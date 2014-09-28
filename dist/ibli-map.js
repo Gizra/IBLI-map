@@ -74,10 +74,10 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
         center: {
           lat: 1.1864,
           lng: 37.925,
-          zoom: 7
+          zoom: 6
         },
         defaults: {
-          minZoom: 7,
+          minZoom: 6,
           maxZoom: 9
         },
         tiles: {
@@ -90,7 +90,7 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
             lng: 31.662597
           },
           northEast: {
-            lat: 10.268303,
+            lat: 10.368303,
             lng: 44.703369
           }
         }
@@ -471,7 +471,7 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
     restrict: 'EA',
     scope: true,
     link: function postLink(scope) {
-      scope.hideData = function () {
+      scope.toggleData = function () {
         // Show/hide the popup data.
         angular.element('#popuop-data').toggle();
         // Show/hide the calculator form.
