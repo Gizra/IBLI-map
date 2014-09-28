@@ -319,7 +319,9 @@ angular
       premiumRate: 0,
       calculatedSum: 0,
       calculator: false,
-      calculatorData: {}
+      calculatorData: {},
+      // This will help us determine if the big marker is open or not.
+      markerOpen: false
     },
     ibliData.getMapOptions()
     );
@@ -507,9 +509,24 @@ angular
       $scope.message = document.createElement('div');
       $scope.message.innerHTML = message;
       $scope.message.appendChild(rate_calculator);
+      // If the Calculator popup is not open, Display the name of the province.
+      if (!$scope.markerOpen) {
+        var marker = $scope.markers.province;
+        marker.focus = false;
+        marker.lat = $scope.latLng.lat;
+        marker.lng = $scope.latLng.lng;
+        marker.message = '<strong>' + properties.IBLI_UNIT + '</strong>';
+        $timeout(function () {
+          marker.focus = true;
+        }, 350);
+      }
     });
 
     $scope.$on("leafletDirectiveMap.geojsonClick", function() {
+      // Mark this new popup as open.
+      $scope.markerOpen = true;
+      var marker = $scope.markers.province;
+      marker.focus = false;
       leafletData.getMap().then(function(map) {
         $timeout(function() {
           L.popup()
@@ -518,6 +535,11 @@ angular
             .addTo(map)
         }, 200);
       });
+    });
+
+    // This will allow the the hover markups to be opened again.
+    $scope.$on('leafletDirectiveMap.popupclose', function(event){
+      $scope.markerOpen = false;
     });
 
     // Reload the map when the period is changed.

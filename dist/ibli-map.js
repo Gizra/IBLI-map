@@ -282,7 +282,8 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
       premiumRate: 0,
       calculatedSum: 0,
       calculator: false,
-      calculatorData: {}
+      calculatorData: {},
+      markerOpen: false
     }, ibliData.getMapOptions());
     // Get divIdToIndex data.
     ibliData.getDivIdToIndex().then(function (data) {
@@ -436,8 +437,23 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
       $scope.message = document.createElement('div');
       $scope.message.innerHTML = message;
       $scope.message.appendChild(rate_calculator);
+      // If the Calculator popup is not open, Display the name of the province.
+      if (!$scope.markerOpen) {
+        var marker = $scope.markers.province;
+        marker.focus = false;
+        marker.lat = $scope.latLng.lat;
+        marker.lng = $scope.latLng.lng;
+        marker.message = '<strong>' + properties.IBLI_UNIT + '</strong>';
+        $timeout(function () {
+          marker.focus = true;
+        }, 350);
+      }
     });
     $scope.$on('leafletDirectiveMap.geojsonClick', function () {
+      // Mark this new popup as open.
+      $scope.markerOpen = true;
+      var marker = $scope.markers.province;
+      marker.focus = false;
       leafletData.getMap().then(function (map) {
         $timeout(function () {
           L.popup().setLatLng([
@@ -446,6 +462,9 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
           ]).setContent($scope.message).addTo(map);
         }, 200);
       });
+    });
+    $scope.$on('leafletDirectiveMap.popupclose', function (event) {
+      $scope.markerOpen = false;
     });
     // Reload the map when the period is changed.
     // TODO: Update the map without reloading the geoJson file.
