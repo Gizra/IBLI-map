@@ -463,6 +463,7 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
         }, 200);
       });
     });
+    // This will allow the the hover markups to be opened again.
     $scope.$on('leafletDirectiveMap.popupclose', function (event) {
       $scope.markerOpen = false;
     });
