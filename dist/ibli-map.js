@@ -372,7 +372,7 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
         break;
       }
       var payouts = L.control();
-      payouts.setPosition('topright');
+      payouts.setPosition('bottomright');
       payouts.onAdd = function () {
         return $compile(angular.element('<payouts></payouts>'))($scope)[0];
       };
@@ -443,7 +443,7 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
           L.popup().setLatLng([
             $scope.latLng.lat,
             $scope.latLng.lng
-          ]).setContent($scope.message).openOn(map);
+          ]).setContent($scope.message).addTo(map);
         }, 200);
       });
     });

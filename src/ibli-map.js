@@ -422,7 +422,7 @@ angular
           break;
       }
       var payouts = L.control();
-      payouts.setPosition('topright');
+      payouts.setPosition('bottomright');
       payouts.onAdd = function () {
         return $compile(angular.element('<payouts></payouts>'))($scope)[0];
       };
@@ -515,7 +515,7 @@ angular
           L.popup()
             .setLatLng([$scope.latLng.lat, $scope.latLng.lng])
             .setContent($scope.message)
-            .openOn(map)
+            .addTo(map)
         }, 200);
       });
     });
