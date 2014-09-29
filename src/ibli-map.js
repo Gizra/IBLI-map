@@ -625,8 +625,9 @@ angular
           setTimeout(function () {
             scope.markerOpen.update();
           }, 5);
-        },
-        scope.calculateRate = function() {
+        };
+
+        scope.calculateRate = function(elementId) {
           // Get the input values.
           var data = scope.calculatorData;
 
@@ -643,8 +644,9 @@ angular
           // Update popup for map moving and size change.
           setTimeout(function () {
             scope.markerOpen.update();
+            angular.element(elementId).trigger('focus');
           }, 5);
-        }
+        };
       }
     };
   });

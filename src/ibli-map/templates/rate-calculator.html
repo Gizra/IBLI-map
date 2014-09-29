@@ -4,15 +4,15 @@
     <form class="calculator-form">
       <div class="input-group">
         <span class="input-group-addon cow"></span>
-        <input type="number" min="0" class="form-control" value="0" placeholder="Cows" ng-change="calculateRate()" ng-model="calculatorData.cows" name="cows" required>
+        <input type="number" min="0" class="form-control" placeholder="Cows" id="cows" ng-change="calculateRate('#cows')" ng-model="calculatorData.cows" name="cows" required>
       </div>
       <div class="input-group">
         <span class="input-group-addon camel"></span>
-        <input type="number" min="0" class="form-control" value="0" placeholder="Camels" ng-change="calculateRate()" ng-model="calculatorData.camels" name="camels" required>
+        <input type="number" min="0" class="form-control" placeholder="Camels" id="camels"  ng-change="calculateRate('#camels')" ng-model="calculatorData.camels" name="camels" required>
       </div>
       <div class="input-group">
         <span class="input-group-addon goat"></span>
-        <input type="number" min="0" class="form-control" value="0" placeholder="Sheep & Goats" ng-change="calculateRate()" ng-model="calculatorData.goats" name="goats" required>
+        <input type="number" min="0" class="form-control" placeholder="Sheep & Goats" id="goats" ng-change="calculateRate('#goats')" ng-model="calculatorData.goats" name="goats" required>
       </div>
     </form>
   </div>
