@@ -280,7 +280,6 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
       images_path: $window.Drupal.settings.ibli_general.iblimap_images_path,
       controls: { custom: [] },
       premiumRate: 0,
-      premiumCalRate: 0,
       calculatedSum: {},
       calculator: false,
       insurers: [],
@@ -419,6 +418,7 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
         }, 500);
       }
     });
+    // When clicking on a division.
     $scope.$on('leafletDirectiveMap.geojsonClick', function (ev, leafletEvent) {
       // Get the properties of the layer for the popup.
       var properties = leafletEvent.properties;
@@ -440,12 +440,18 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
       case 'MANDERA':
       case 'GARISSA':
         insurer = '<a href="http://www.takafulafrica.com/">Takaful</a>';
+        $scope.insurers = ['TIA'];
         break;
       case 'ISIOLO':
         insurer = '<a href="http://www.takafulafrica.com/">Takaful</a> | <a href="http://www.apainsurance.org/">APA</a>';
+        $scope.insurers = [
+          'TIA',
+          'APA'
+        ];
         break;
       case 'MARSABIT':
         insurer = '<a href="http://www.apainsurance.org/">APA</a>';
+        $scope.insurers = ['APA'];
         break;
       case 'MOYALE':
       case 'IJARA':
@@ -462,6 +468,7 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
       // Insurer is OIC in Ethiopia, Regardless of the district.
       if (properties.COUNTRY == 'ETHIOPIA') {
         insurer = 'OIC';
+        $scope.insurers = ['OIC'];
       }
       // If no division, just hide the premium rate.
       if ($scope.premiumRate && $scope.premiumRate != 'NaN') {
@@ -484,28 +491,6 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
       if (rate_calculator) {
         $scope.message.appendChild(rate_calculator);
       }
-      // Just moving it to another value to avoid changes on hover.
-      $scope.premiumCalRate = $scope.premiumRate;
-      switch (insurer) {
-      case '<a href="http://www.takafulafrica.com/">Takaful</a>':
-        $scope.insurers = ['TIA'];
-        break;
-      case '<a href="http://www.apainsurance.org/">APA</a>':
-        $scope.insurers = ['APA'];
-        break;
-      case 'OIC':
-        $scope.insurers = ['OIC'];
-        break;
-      case '<a href="http://www.takafulafrica.com/">Takaful</a> | <a href="http://www.apainsurance.org/">APA</a>':
-        $scope.insurers = [
-          'TIA',
-          'APA'
-        ];
-        break;
-      default:
-        $scope.insurers = [];
-        break;
-      }
       // Mark this new popup as open.
       $scope.markerOpen = L.popup();
       // Hide hovering marker.
@@ -517,7 +502,7 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
             $scope.latLng.lat,
             $scope.latLng.lng
           ]).setContent($scope.message).addTo(map);
-        }, 500);
+        }, 550);
       });
     });
     // This will allow the the hover markups to be opened again.
@@ -549,6 +534,13 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
     scope: true,
     link: function postLink(scope) {
       scope.toggleData = function () {
+        // Reset form.
+        scope.calculatorData = {
+          cows: null,
+          camels: null,
+          goats: null
+        };
+        scope.calculatedSum = {};
         // Show/hide the popup data.
         angular.element('#popuop-data').toggle();
         // Show/hide the calculator form.
@@ -566,7 +558,7 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
         var goats = data.goats ? data.goats : 0;
         // Calculate the rate.
         angular.forEach(scope.insurers, function (insurer) {
-          scope.calculatedSum[insurer] = (cows * scope.calculationRates.cows[insurer] + camels * scope.calculationRates.camels[insurer] + goats * scope.calculationRates.goats[insurer]) * (scope.premiumCalRate / 100);
+          scope.calculatedSum[insurer] = (cows * scope.calculationRates.cows[insurer] + camels * scope.calculationRates.camels[insurer] + goats * scope.calculationRates.goats[insurer]) * (scope.premiumRate / 100);
         });
         // Update popup for map moving and size change.
         setTimeout(function () {
