@@ -280,10 +280,29 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
       images_path: $window.Drupal.settings.ibli_general.iblimap_images_path,
       controls: { custom: [] },
       premiumRate: 0,
-      calculatedSum: 0,
+      premiumCalRate: 0,
+      calculatedSum: {},
       calculator: false,
+      insurers: [],
       calculatorData: {},
-      markerOpen: false
+      markerOpen: false,
+      calculationRates: {
+        camels: {
+          APA: 28000,
+          TIA: 35000,
+          OIC: 10000
+        },
+        cows: {
+          APA: 20000,
+          TIA: 25000,
+          OIC: 6000
+        },
+        goats: {
+          APA: 2000,
+          TIA: 2500,
+          OIC: 8000
+        }
+      }
     }, ibliData.getMapOptions());
     // Get divIdToIndex data.
     ibliData.getDivIdToIndex().then(function (data) {
@@ -384,8 +403,6 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
       var layer = leafletEvent.target;
       layer.setStyle(ibliData.getHoverStyle());
       layer.bringToFront();
-      // Where there's no known insurer, display TBD.
-      var insurer = 'TBD';
       // Get the location of the layer for the popup.
       $scope.latLng = leafletEvent.latlng;
       // Get the properties of the layer for the popup.
@@ -400,12 +417,9 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
       // Define empty html for PIM.
       var rateHTML = '';
       var rate_calculator = '';
-      // If no division, just hide the premium rate.
-      if ($scope.premiumRate && $scope.premiumRate != 'NaN') {
-        rateHTML = '<div>' + 'Premium Rate: <strong>' + $scope.premiumRate + '%</strong>' + '</div>';
-        rate_calculator = $compile(angular.element('<rate-calculator></rate-calculator>'))($scope)[0];
-      }
       // End of Calculating the premium rate.
+      // Display the insurer according to the district.
+      var insurer;
       switch (properties.DISTRICT) {
       case 'WAJIR':
       case 'MANDERA':
@@ -426,6 +440,21 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
       case 'TURKANA':
         insurer = 'TBD';
         break;
+      default:
+        // Where there's no known insurer, display TBD.
+        insurer = 'TBD';
+      }
+      // Insurer is OIC in Ethiopia, Regardless of the district.
+      if (properties.COUNTRY == 'ETHIOPIA') {
+        insurer = 'OIC';
+      }
+      // If no division, just hide the premium rate.
+      if ($scope.premiumRate && $scope.premiumRate != 'NaN') {
+        rateHTML = '<div>' + 'Premium Rate: <strong>' + $scope.premiumRate + '%</strong>' + '</div>';
+      }
+      // If no division, no insurer, Hide the rate_calculator.
+      if ($scope.premiumRate && $scope.premiumRate != 'NaN' && insurer != 'TBD') {
+        rate_calculator = $compile(angular.element('<rate-calculator></rate-calculator>'))($scope)[0];
       }
       var message = '<div id="popuop-data">' + '<div>' + '<strong>' + properties.IBLI_UNIT + '</strong>' + '</div>' + rateHTML;
       // Show the payout / sales window / insurer information only if the year is current.
@@ -436,9 +465,34 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
       }
       $scope.message = document.createElement('div');
       $scope.message.innerHTML = message;
-      $scope.message.appendChild(rate_calculator);
-      // If the Calculator popup is not open, Display the name of the province.
+      // Compile the calculator directive.
+      if (rate_calculator) {
+        $scope.message.appendChild(rate_calculator);
+      }
+      // If the Calculator popup is not open, Don't open the hover marker/Update insurer.
       if (!$scope.markerOpen) {
+        // Just moving it to another value to avoid changes on hover.
+        $scope.premiumCalRate = $scope.premiumRate;
+        switch (insurer) {
+        case '<a href="http://www.takafulafrica.com/">Takaful</a>':
+          $scope.insurers = ['TIA'];
+          break;
+        case '<a href="http://www.apainsurance.org/">APA</a>':
+          $scope.insurers = ['APA'];
+          break;
+        case 'OIC':
+          $scope.insurers = ['OIC'];
+          break;
+        case '<a href="http://www.takafulafrica.com/">Takaful</a> | <a href="http://www.apainsurance.org/">APA</a>':
+          $scope.insurers = [
+            'TIA',
+            'APA'
+          ];
+          break;
+        default:
+          $scope.insurers = [];
+          break;
+        }
         var marker = $scope.markers.province;
         marker.focus = false;
         marker.lat = $scope.latLng.lat;
@@ -446,21 +500,22 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
         marker.message = '<strong>' + properties.IBLI_UNIT + '</strong>';
         $timeout(function () {
           marker.focus = true;
-        }, 350);
+        }, 500);
       }
     });
     $scope.$on('leafletDirectiveMap.geojsonClick', function () {
       // Mark this new popup as open.
-      $scope.markerOpen = true;
+      $scope.markerOpen = L.popup();
+      // Hide hovering marker.
       var marker = $scope.markers.province;
       marker.focus = false;
       leafletData.getMap().then(function (map) {
         $timeout(function () {
-          L.popup().setLatLng([
+          $scope.markerOpen.setLatLng([
             $scope.latLng.lat,
             $scope.latLng.lng
           ]).setContent($scope.message).addTo(map);
-        }, 200);
+        }, 500);
       });
     });
     // This will allow the the hover markups to be opened again.
@@ -496,15 +551,25 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
         angular.element('#popuop-data').toggle();
         // Show/hide the calculator form.
         scope.calculator = !scope.calculator;
+        // Update popup for map moving and size change.
+        setTimeout(function () {
+          scope.markerOpen.update();
+        }, 10);
       }, scope.calculateRate = function () {
         // Get the input values.
         var data = scope.calculatorData;
         // Put 0 if one of the inputs is empty.
         var cows = data.cows ? data.cows : 0;
         var camels = data.camels ? data.camels : 0;
-        var sheep_goats = data.sheep_goats ? data.sheep_goats : 0;
+        var goats = data.goats ? data.goats : 0;
         // Calculate the rate.
-        scope.calculatedSum = (cows * 25000 + camels * 35000 + sheep_goats * 2500) * (scope.premiumRate / 100);
+        angular.forEach(scope.insurers, function (insurer) {
+          scope.calculatedSum[insurer] = (cows * scope.calculationRates.cows[insurer] + camels * scope.calculationRates.camels[insurer] + goats * scope.calculationRates.goats[insurer]) * (scope.premiumCalRate / 100);
+        });
+        // Update popup for map moving and size change.
+        setTimeout(function () {
+          scope.markerOpen.update();
+        }, 10);
       };
     }
   };
