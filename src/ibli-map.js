@@ -455,11 +455,27 @@ angular
       var layer = leafletEvent.target;
       layer.setStyle(ibliData.getHoverStyle());
       layer.bringToFront();
+      // Get the properties of the layer for the popup.
+      var properties = layer.feature.properties;
       // Get the location of the layer for the popup.
       $scope.latLng = leafletEvent.latlng;
 
+      // If the Calculator popup is not open, Don't open the hover marker/Update insurer.
+      if (!$scope.markerOpen) {
+        var marker = $scope.markers.province;
+        marker.focus = false;
+        marker.lat = $scope.latLng.lat;
+        marker.lng = $scope.latLng.lng;
+        marker.message = '<strong>' + properties.IBLI_UNIT + '</strong>';
+        $timeout(function () {
+          marker.focus = true;
+        }, 500);
+      }
+    });
+
+    $scope.$on("leafletDirectiveMap.geojsonClick", function(ev, leafletEvent) {
       // Get the properties of the layer for the popup.
-      var properties = layer.feature.properties;
+      var properties = leafletEvent.properties;
       // Display the premium rate.
       var season = $scope.period.value.match(/L/) ? 'Aug/Sep' : 'Jan/Feb';
       var year = $scope.period.value.match(/\d{4}/)[0];
@@ -515,10 +531,10 @@ angular
       }
       var message =
         '<div id="popuop-data">' +
-          '<div>'+
-            '<strong>' + properties.IBLI_UNIT + '</strong>'+
-          '</div>'+
-          rateHTML;
+        '<div>'+
+        '<strong>' + properties.IBLI_UNIT + '</strong>'+
+        '</div>'+
+        rateHTML;
 
       // Show the payout / sales window / insurer information only if the year is current.
       if (new Date().getFullYear() > year) {
@@ -527,12 +543,12 @@ angular
       else {
         message +=
           '<dl>' +
-            '<dt>Insurer:</dt>' +
-            '<dd class="insurers">' +
-            insurer +
-            '</dd>' +
+          '<dt>Insurer:</dt>' +
+          '<dd class="insurers">' +
+          insurer +
+          '</dd>' +
           '</dl>' +
-        '</div>';
+          '</div>';
       }
       $scope.message = document.createElement('div');
       $scope.message.innerHTML = message;
@@ -540,39 +556,27 @@ angular
       if (rate_calculator) {
         $scope.message.appendChild(rate_calculator);
       }
-      // If the Calculator popup is not open, Don't open the hover marker/Update insurer.
-      if (!$scope.markerOpen) {
-        // Just moving it to another value to avoid changes on hover.
-        $scope.premiumCalRate = $scope.premiumRate;
-        switch (insurer) {
-          case '<a href="http://www.takafulafrica.com/">Takaful</a>':
-            $scope.insurers = ['TIA'];
-            break;
-          case '<a href="http://www.apainsurance.org/">APA</a>':
-            $scope.insurers = ['APA'];
-            break;
-          case 'OIC':
-            $scope.insurers = ['OIC'];
-            break;
-          case '<a href="http://www.takafulafrica.com/">Takaful</a> | <a href="http://www.apainsurance.org/">APA</a>':
-            $scope.insurers = ['TIA','APA'];
-            break;
-          default:
-            $scope.insurers = [];
-            break;
-        }
-        var marker = $scope.markers.province;
-        marker.focus = false;
-        marker.lat = $scope.latLng.lat;
-        marker.lng = $scope.latLng.lng;
-        marker.message = '<strong>' + properties.IBLI_UNIT + '</strong>';
-        $timeout(function () {
-          marker.focus = true;
-        }, 500);
-      }
-    });
 
-    $scope.$on("leafletDirectiveMap.geojsonClick", function() {
+      // Just moving it to another value to avoid changes on hover.
+      $scope.premiumCalRate = $scope.premiumRate;
+      switch (insurer) {
+        case '<a href="http://www.takafulafrica.com/">Takaful</a>':
+          $scope.insurers = ['TIA'];
+          break;
+        case '<a href="http://www.apainsurance.org/">APA</a>':
+          $scope.insurers = ['APA'];
+          break;
+        case 'OIC':
+          $scope.insurers = ['OIC'];
+          break;
+        case '<a href="http://www.takafulafrica.com/">Takaful</a> | <a href="http://www.apainsurance.org/">APA</a>':
+          $scope.insurers = ['TIA','APA'];
+          break;
+        default:
+          $scope.insurers = [];
+          break;
+      }
+
       // Mark this new popup as open.
       $scope.markerOpen = L.popup();
       // Hide hovering marker.

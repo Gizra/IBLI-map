@@ -403,10 +403,25 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
       var layer = leafletEvent.target;
       layer.setStyle(ibliData.getHoverStyle());
       layer.bringToFront();
-      // Get the location of the layer for the popup.
-      $scope.latLng = leafletEvent.latlng;
       // Get the properties of the layer for the popup.
       var properties = layer.feature.properties;
+      // Get the location of the layer for the popup.
+      $scope.latLng = leafletEvent.latlng;
+      // If the Calculator popup is not open, Don't open the hover marker/Update insurer.
+      if (!$scope.markerOpen) {
+        var marker = $scope.markers.province;
+        marker.focus = false;
+        marker.lat = $scope.latLng.lat;
+        marker.lng = $scope.latLng.lng;
+        marker.message = '<strong>' + properties.IBLI_UNIT + '</strong>';
+        $timeout(function () {
+          marker.focus = true;
+        }, 500);
+      }
+    });
+    $scope.$on('leafletDirectiveMap.geojsonClick', function (ev, leafletEvent) {
+      // Get the properties of the layer for the popup.
+      var properties = leafletEvent.properties;
       // Display the premium rate.
       var season = $scope.period.value.match(/L/) ? 'Aug/Sep' : 'Jan/Feb';
       var year = $scope.period.value.match(/\d{4}/)[0];
@@ -469,41 +484,28 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
       if (rate_calculator) {
         $scope.message.appendChild(rate_calculator);
       }
-      // If the Calculator popup is not open, Don't open the hover marker/Update insurer.
-      if (!$scope.markerOpen) {
-        // Just moving it to another value to avoid changes on hover.
-        $scope.premiumCalRate = $scope.premiumRate;
-        switch (insurer) {
-        case '<a href="http://www.takafulafrica.com/">Takaful</a>':
-          $scope.insurers = ['TIA'];
-          break;
-        case '<a href="http://www.apainsurance.org/">APA</a>':
-          $scope.insurers = ['APA'];
-          break;
-        case 'OIC':
-          $scope.insurers = ['OIC'];
-          break;
-        case '<a href="http://www.takafulafrica.com/">Takaful</a> | <a href="http://www.apainsurance.org/">APA</a>':
-          $scope.insurers = [
-            'TIA',
-            'APA'
-          ];
-          break;
-        default:
-          $scope.insurers = [];
-          break;
-        }
-        var marker = $scope.markers.province;
-        marker.focus = false;
-        marker.lat = $scope.latLng.lat;
-        marker.lng = $scope.latLng.lng;
-        marker.message = '<strong>' + properties.IBLI_UNIT + '</strong>';
-        $timeout(function () {
-          marker.focus = true;
-        }, 500);
+      // Just moving it to another value to avoid changes on hover.
+      $scope.premiumCalRate = $scope.premiumRate;
+      switch (insurer) {
+      case '<a href="http://www.takafulafrica.com/">Takaful</a>':
+        $scope.insurers = ['TIA'];
+        break;
+      case '<a href="http://www.apainsurance.org/">APA</a>':
+        $scope.insurers = ['APA'];
+        break;
+      case 'OIC':
+        $scope.insurers = ['OIC'];
+        break;
+      case '<a href="http://www.takafulafrica.com/">Takaful</a> | <a href="http://www.apainsurance.org/">APA</a>':
+        $scope.insurers = [
+          'TIA',
+          'APA'
+        ];
+        break;
+      default:
+        $scope.insurers = [];
+        break;
       }
-    });
-    $scope.$on('leafletDirectiveMap.geojsonClick', function () {
       // Mark this new popup as open.
       $scope.markerOpen = L.popup();
       // Hide hovering marker.
