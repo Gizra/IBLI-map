@@ -301,7 +301,9 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
           TIA: 2500,
           OIC: 8000
         }
-      }
+      },
+      hoverDelay: 0,
+      clickDelay: 250
     }, ibliData.getMapOptions());
     // Get divIdToIndex data.
     ibliData.getDivIdToIndex().then(function (data) {
@@ -397,6 +399,12 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
       };
       $scope.controls.custom.push(payouts);
     }
+    var controls = L.control();
+    controls.setPosition('topright');
+    controls.onAdd = function () {
+      return $compile(angular.element('<div id="payouts-sales-periods"><form class="controls-form"><div class="input-group"><span class="input-group-addon">Hover Delay:</span><input type="number" min="0" class="form-control" ng-model="hoverDelay"></div><div class="input-group"><span class="input-group-addon">Click Delay:</span><input type="number" min="0" class="form-control" ng-model="clickDelay"></div></form></div>'))($scope)[0];
+    };
+    $scope.controls.custom.push(controls);
     // When hovering a division.
     $scope.$on('leafletDirectiveMap.geojsonMouseover', function (ev, leafletEvent) {
       var layer = leafletEvent.target;
@@ -415,7 +423,7 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
         marker.message = '<strong>' + properties.IBLI_UNIT + '</strong>';
         $timeout(function () {
           marker.focus = true;
-        }, 500);
+        }, $scope.hoverDelay);
       }
     });
     // When clicking on a division.
@@ -502,7 +510,7 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
             $scope.latLng.lat,
             $scope.latLng.lng
           ]).setContent($scope.message).addTo(map);
-        }, 550);
+        }, $scope.clickDelay);
       });
     });
     // This will allow the the hover markups to be opened again when Data popup is closed.
