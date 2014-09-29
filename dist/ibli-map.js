@@ -548,7 +548,7 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
         // Update popup for map moving and size change.
         setTimeout(function () {
           scope.markerOpen.update();
-        }, 10);
+        }, 5);
       }, scope.calculateRate = function () {
         // Get the input values.
         var data = scope.calculatorData;
@@ -563,7 +563,7 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
         // Update popup for map moving and size change.
         setTimeout(function () {
           scope.markerOpen.update();
-        }, 10);
+        }, 5);
       };
     }
   };

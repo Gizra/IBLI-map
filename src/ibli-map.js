@@ -624,7 +624,7 @@ angular
           // Update popup for map moving and size change.
           setTimeout(function () {
             scope.markerOpen.update();
-          }, 10);
+          }, 5);
         },
         scope.calculateRate = function() {
           // Get the input values.
@@ -643,7 +643,7 @@ angular
           // Update popup for map moving and size change.
           setTimeout(function () {
             scope.markerOpen.update();
-          }, 10);
+          }, 5);
         }
       }
     };
