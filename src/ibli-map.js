@@ -576,8 +576,8 @@ angular
       });
     });
 
-    // This will allow the the hover markups to be opened again.
-    $scope.$on('leafletDirectiveMap.popupclose', function(event){
+    // This will allow the the hover markups to be opened again when Data popup is closed.
+    $scope.$on('leafletDirectiveMap.popupclose', function() {
       $scope.markerOpen = false;
     });
 
