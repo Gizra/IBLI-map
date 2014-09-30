@@ -626,7 +626,7 @@ angular
           // Update popup for map moving and size change.
           setTimeout(function () {
             scope.markerOpen.update();
-          }, 5);
+          }, 30);
         };
 
         scope.calculateRate = function(elementId) {
@@ -647,7 +647,7 @@ angular
           setTimeout(function () {
             scope.markerOpen.update();
             angular.element(elementId).trigger('focus');
-          }, 5);
+          }, 30);
         };
       }
     };
