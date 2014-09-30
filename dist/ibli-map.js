@@ -399,12 +399,6 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
       };
       $scope.controls.custom.push(payouts);
     }
-    var controls = L.control();
-    controls.setPosition('topright');
-    controls.onAdd = function () {
-      return $compile(angular.element('<div id="payouts-sales-periods"><form class="controls-form"><div class="input-group"><span class="input-group-addon">Hover Delay:</span><input type="number" min="0" class="form-control" ng-model="hoverDelay"></div><div class="input-group"><span class="input-group-addon">Click Delay:</span><input type="number" min="0" class="form-control" ng-model="clickDelay"></div></form></div>'))($scope)[0];
-    };
-    $scope.controls.custom.push(controls);
     // When hovering a division.
     $scope.$on('leafletDirectiveMap.geojsonMouseover', function (ev, leafletEvent) {
       var layer = leafletEvent.target;
