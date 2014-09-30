@@ -339,7 +339,9 @@ angular
           TIA:2500,
           OIC:8000
         }
-      }
+      },
+      hoverDelay: 0,
+      clickDelay: 250
     },
     ibliData.getMapOptions()
     );
@@ -448,7 +450,7 @@ angular
       };
       $scope.controls.custom.push(payouts);
     }
-
+    
     // When hovering a division.
     $scope.$on("leafletDirectiveMap.geojsonMouseover", function(ev, leafletEvent) {
       var layer = leafletEvent.target;
@@ -468,7 +470,7 @@ angular
         marker.message = '<strong>' + properties.IBLI_UNIT + '</strong>';
         $timeout(function () {
           marker.focus = true;
-        }, 500);
+        }, $scope.hoverDelay);
       }
     });
 
@@ -572,7 +574,7 @@ angular
             .setLatLng([$scope.latLng.lat, $scope.latLng.lng])
             .setContent($scope.message)
             .addTo(map)
-        }, 550);
+        }, $scope.clickDelay);
       });
     });
 

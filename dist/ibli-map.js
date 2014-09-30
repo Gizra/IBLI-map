@@ -301,7 +301,9 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
           TIA: 2500,
           OIC: 8000
         }
-      }
+      },
+      hoverDelay: 0,
+      clickDelay: 250
     }, ibliData.getMapOptions());
     // Get divIdToIndex data.
     ibliData.getDivIdToIndex().then(function (data) {
@@ -415,7 +417,7 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
         marker.message = '<strong>' + properties.IBLI_UNIT + '</strong>';
         $timeout(function () {
           marker.focus = true;
-        }, 500);
+        }, $scope.hoverDelay);
       }
     });
     // When clicking on a division.
@@ -502,7 +504,7 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
             $scope.latLng.lat,
             $scope.latLng.lng
           ]).setContent($scope.message).addTo(map);
-        }, 550);
+        }, $scope.clickDelay);
       });
     });
     // This will allow the the hover markups to be opened again when Data popup is closed.
