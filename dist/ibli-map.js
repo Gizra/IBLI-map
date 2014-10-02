@@ -81,7 +81,7 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
           maxZoom: 9
         },
         tiles: {
-          url: 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+          url: 'https://{s}.tiles.mapbox.com/v3/ibli.jlgjoi4l/{z}/{x}/{y}.png',
           options: { id: 'v3/examples.map-20v6611k' }
         },
         maxbounds: {
