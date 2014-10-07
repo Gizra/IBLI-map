@@ -284,6 +284,7 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
       calculator: false,
       insurers: [],
       calculatorData: {},
+      calculatorCurrency: 'KSh',
       markerOpen: false,
       calculationRates: {
         camels: {
@@ -471,6 +472,7 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
       if (properties.COUNTRY == 'ETHIOPIA') {
         insurer = 'OIC';
         $scope.insurers = ['OIC'];
+        $scope.calculatorCurrency = 'Br';
       }
       // If no division, just hide the premium rate.
       if ($scope.premiumRate && $scope.premiumRate != 'NaN') {

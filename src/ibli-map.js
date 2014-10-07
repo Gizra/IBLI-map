@@ -321,6 +321,7 @@ angular
       calculator: false,
       insurers: [],
       calculatorData: {},
+      calculatorCurrency: 'KSh',
       // This will help us determine if the big marker is open or not.
       markerOpen: false,
       calculationRates: {
@@ -523,6 +524,7 @@ angular
       if (properties.COUNTRY == "ETHIOPIA") {
         insurer = 'OIC';
         $scope.insurers = ['OIC'];
+        $scope.calculatorCurrency = 'Br';
       }
       // If no division, just hide the premium rate.
       if ($scope.premiumRate && $scope.premiumRate != 'NaN') {
