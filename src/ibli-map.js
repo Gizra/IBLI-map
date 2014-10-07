@@ -477,6 +477,8 @@ angular
 
     // When clicking on a division.
     $scope.$on("leafletDirectiveMap.geojsonClick", function(ev, leafletEvent) {
+      // Reseting the currency on every hover
+      $scope.calculatorCurrency = 'KSh';
       // Get the properties of the layer for the popup.
       var properties = leafletEvent.properties;
       // Display the premium rate.
@@ -520,7 +522,7 @@ angular
           insurer = 'TBD';
 
       }
-      // Insurer is OIC in Ethiopia, Regardless of the district.
+      // Insurer is OIC in Ethiopia and currency is Br, Regardless of the district.
       if (properties.COUNTRY == "ETHIOPIA") {
         insurer = 'OIC';
         $scope.insurers = ['OIC'];
