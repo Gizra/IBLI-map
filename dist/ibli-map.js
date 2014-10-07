@@ -284,6 +284,7 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
       calculator: false,
       insurers: [],
       calculatorData: {},
+      calculatorCurrency: 'KSh',
       markerOpen: false,
       calculationRates: {
         camels: {
@@ -422,6 +423,8 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
     });
     // When clicking on a division.
     $scope.$on('leafletDirectiveMap.geojsonClick', function (ev, leafletEvent) {
+      // Reseting the currency on every hover
+      $scope.calculatorCurrency = 'KSh';
       // Get the properties of the layer for the popup.
       var properties = leafletEvent.properties;
       // Display the premium rate.
@@ -467,10 +470,11 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
         // Where there's no known insurer, display TBD.
         insurer = 'TBD';
       }
-      // Insurer is OIC in Ethiopia, Regardless of the district.
+      // Insurer is OIC in Ethiopia and currency is Br, Regardless of the district.
       if (properties.COUNTRY == 'ETHIOPIA') {
         insurer = 'OIC';
         $scope.insurers = ['OIC'];
+        $scope.calculatorCurrency = 'Br';
       }
       // If no division, just hide the premium rate.
       if ($scope.premiumRate && $scope.premiumRate != 'NaN') {

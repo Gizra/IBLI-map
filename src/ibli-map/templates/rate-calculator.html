@@ -16,7 +16,11 @@
       </div>
     </form>
   </div>
-  <div ng-show="calculator" class="calculated-sum" ng-repeat="insurer in insurers">
-    Approximate cost to insure ({{insurer}}): <strong>{{calculatedSum[insurer] ? calculatedSum[insurer] : 0  | number : 2}}</strong>
+  <div ng-show="calculator">
+    Approximate cost to insure ({{calculatorCurrency}})
+    <div class="calculated-sum" ng-repeat="insurer in insurers">
+      <span class="insurer">{{insurer}}</span>
+      <strong class="sum">{{calculatedSum[insurer] ? calculatedSum[insurer] : 0  | number : 2}}</strong>
+    </div>
   </div>
 </div>
