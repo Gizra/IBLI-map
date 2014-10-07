@@ -161,16 +161,16 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
       var deferred = $q.defer();
       $http({
         method: 'GET',
-        url: 'sites/default/files/data/KenyaEthiopia_IBLIunits_July2014.geojson',
+        url: 'sites/default/files/data/KenyaEthiopia_IBLIunits_July2014.topojson',
         serverPredefined: true
       }).success(function (divisions) {
         // Prepare geoJson object with the division data.
-        var geojsonObject = {
+        var topojsonObject = {
             data: divisions,
             style: style,
             resetStyleOnMouseout: true
           };
-        deferred.resolve(geojsonObject);
+        deferred.resolve(omnivore.topojson(topojsonObject));
       });
       return deferred.promise;
     }
