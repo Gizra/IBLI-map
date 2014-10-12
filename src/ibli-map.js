@@ -106,7 +106,7 @@ angular
           maxZoom: 9
         },
         tiles: {
-          url: 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+          url: 'https://{s}.tiles.mapbox.com/v3/ibli.jlgjoi4l/{z}/{x}/{y}.png',
           options: {
             id: 'v3/examples.map-20v6611k'
           }
@@ -193,16 +193,16 @@ angular
       var deferred = $q.defer();
       $http({
         method: 'GET',
-        url: 'sites/default/files/data/KenyaEthiopia_IBLIunits_July2014.geojson',
+        url: 'sites/default/files/data/KenyaEthiopia_IBLIunits_July2014.topojson',
         serverPredefined: true
-      }).success(function(divisions) {
+      }).success(function(data) {
         // Prepare geoJson object with the division data.
-        var geojsonObject = {
-          data: divisions,
+        var GeoJsonObject = {
+          data: topojson.feature(data, data.objects.KenyaEthiopia_IBLIunits_July2014),
           style: style,
           resetStyleOnMouseout: true
         };
-        deferred.resolve(geojsonObject);
+        deferred.resolve(GeoJsonObject);
       });
       return deferred.promise;
     }
@@ -321,6 +321,7 @@ angular
       calculator: false,
       insurers: [],
       calculatorData: {},
+      calculatorCurrency: 'KSh',
       // This will help us determine if the big marker is open or not.
       markerOpen: false,
       calculationRates: {
@@ -479,6 +480,8 @@ angular
 
     // When clicking on a division.
     $scope.$on("leafletDirectiveMap.geojsonClick", function(ev, leafletEvent) {
+      // Reseting the currency on every hover
+      $scope.calculatorCurrency = 'KSh';
       // Get the properties of the layer for the popup.
       var properties = leafletEvent.properties;
       // Display the premium rate.
@@ -522,10 +525,11 @@ angular
           insurer = 'TBD';
 
       }
-      // Insurer is OIC in Ethiopia, Regardless of the district.
+      // Insurer is OIC in Ethiopia and currency is Br, Regardless of the district.
       if (properties.COUNTRY == "ETHIOPIA") {
         insurer = 'OIC';
         $scope.insurers = ['OIC'];
+        $scope.calculatorCurrency = 'Br';
       }
       // If no division, just hide the premium rate.
       if ($scope.premiumRate && $scope.premiumRate != 'NaN') {
@@ -586,15 +590,17 @@ angular
       $scope.markerOpen = false;
     });
 
-    // Reload the map when the period is changed.
-    // TODO: Update the map without reloading the geoJson file.
-    $scope.$watch('period', function() {
-      ibliData.getDivIdToIndex($scope.period).then(function (data) {
-        ibliData.getGeoJson().then(function (data) {
-          $scope.geojson = data;
+    if ($attrs.periodList == "true") {
+      // Reload the map when the period is changed.
+      // TODO: Update the map without reloading the geoJson file.
+      $scope.$watch('period', function () {
+        ibliData.getDivIdToIndex($scope.period).then(function (data) {
+          ibliData.getGeoJson().then(function (data) {
+            $scope.geojson = data;
+          });
         });
       });
-    });
+    }
   })
   .directive('payouts', function () {
     var path = Drupal.settings.ibli_general.iblimap_library_path;
