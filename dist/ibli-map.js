@@ -163,14 +163,14 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
         method: 'GET',
         url: 'sites/default/files/data/KenyaEthiopia_IBLIunits_July2014.topojson',
         serverPredefined: true
-      }).success(function (divisions) {
+      }).success(function (data) {
         // Prepare geoJson object with the division data.
-        var topojsonObject = {
-            data: divisions,
+        var GeoJsonObject = {
+            data: topojson.feature(data, data.objects.KenyaEthiopia_IBLIunits_July2014),
             style: style,
             resetStyleOnMouseout: true
           };
-        deferred.resolve(omnivore.topojson(topojsonObject));
+        deferred.resolve(GeoJsonObject);
       });
       return deferred.promise;
     }
@@ -519,9 +519,17 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
     // TODO: Update the map without reloading the geoJson file.
     $scope.$watch('period', function () {
       ibliData.getDivIdToIndex($scope.period).then(function (data) {
-        ibliData.getGeoJson().then(function (data) {
-          $scope.geojson = data;
-        });
+        if (!$scope.geojson) {
+          ibliData.getGeoJson().then(function (data) {
+            $scope.geojson = data;
+            console.log($scope.geojson);
+          });
+        } else {
+          ibliData.getGeoJson().then(function (data) {
+            $scope.geojson = data;
+            console.log($scope.geojson);
+          });
+        }
       });
     });
   }

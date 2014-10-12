@@ -8,7 +8,7 @@
     "leaflet": "~0.7.2",
     "angular-leaflet-directive": "~0.7.7",
     "Leaflet.awesome-markers": "~2.0.2",
-    "leaflet-omnivore": "latest"
+    "topojson": "latest"
   },
   "devDependencies": {
     "angular-apimock": "*",
