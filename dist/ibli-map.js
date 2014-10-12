@@ -409,12 +409,10 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
       // Get the properties of the layer for the popup.
       var properties = layer.feature.properties;
       // Get the bounds of the layer to display the popup on the north-east bounds.
-      $scope.latLng = layer.getBounds()._northEast;
+      var bounds = layer.getBounds();
+      $scope.latLng = bounds.getCenter();
       // If the Calculator popup is not open, Don't open the hover marker/Update insurer.
       if (!$scope.markerOpen && properties.IBLI_UNIT != $scope.divisionName) {
-        leafletData.getMap().then(function (map) {
-          map.fitBounds(layer.getBounds());
-        });
         var marker = $scope.markers.province;
         marker.focus = false;
         marker.lat = $scope.latLng.lat;
