@@ -515,23 +515,17 @@ angular.module('ibliApp', ['leaflet-directive']).constant('BACKEND_URL', 'http:/
     $scope.$on('leafletDirectiveMap.popupclose', function () {
       $scope.markerOpen = false;
     });
-    // Reload the map when the period is changed.
-    // TODO: Update the map without reloading the geoJson file.
-    $scope.$watch('period', function () {
-      ibliData.getDivIdToIndex($scope.period).then(function (data) {
-        if (!$scope.geojson) {
+    if ($attrs.periodList == 'true') {
+      // Reload the map when the period is changed.
+      // TODO: Update the map without reloading the geoJson file.
+      $scope.$watch('period', function () {
+        ibliData.getDivIdToIndex($scope.period).then(function (data) {
           ibliData.getGeoJson().then(function (data) {
             $scope.geojson = data;
-            console.log($scope.geojson);
           });
-        } else {
-          ibliData.getGeoJson().then(function (data) {
-            $scope.geojson = data;
-            console.log($scope.geojson);
-          });
-        }
+        });
       });
-    });
+    }
   }
 ]).directive('payouts', function () {
   var path = Drupal.settings.ibli_general.iblimap_library_path;
