@@ -117,7 +117,7 @@ angular
             lng: 31.662597
           },
           northEast:{
-            lat: 10.368303,
+            lat: 10.998303,
             lng: 44.703369
           }
         }
@@ -633,7 +633,7 @@ angular
           // Update popup for map moving and size change.
           setTimeout(function () {
             scope.markerOpen.update();
-          }, 30);
+          }, 80);
         };
 
         scope.calculateRate = function(elementId) {
@@ -654,7 +654,7 @@ angular
           setTimeout(function () {
             scope.markerOpen.update();
             angular.element(elementId).trigger('focus');
-          }, 30);
+          }, 80);
         };
       }
     };
