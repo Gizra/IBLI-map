@@ -193,16 +193,16 @@ angular
       var deferred = $q.defer();
       $http({
         method: 'GET',
-        url: 'sites/default/files/data/KenyaEthiopia_IBLIunits_July2014.geojson',
+        url: 'sites/default/files/data/KenyaEthiopia_IBLIunits_July2014.topojson',
         serverPredefined: true
-      }).success(function(divisions) {
+      }).success(function(data) {
         // Prepare geoJson object with the division data.
-        var geojsonObject = {
-          data: divisions,
+        var GeoJsonObject = {
+          data: topojson.feature(data, data.objects.KenyaEthiopia_IBLIunits_July2014),
           style: style,
           resetStyleOnMouseout: true
         };
-        deferred.resolve(geojsonObject);
+        deferred.resolve(GeoJsonObject);
       });
       return deferred.promise;
     }
@@ -587,15 +587,17 @@ angular
       $scope.markerOpen = false;
     });
 
-    // Reload the map when the period is changed.
-    // TODO: Update the map without reloading the geoJson file.
-    $scope.$watch('period', function() {
-      ibliData.getDivIdToIndex($scope.period).then(function (data) {
-        ibliData.getGeoJson().then(function (data) {
-          $scope.geojson = data;
+    if ($attrs.periodList == "true") {
+      // Reload the map when the period is changed.
+      // TODO: Update the map without reloading the geoJson file.
+      $scope.$watch('period', function () {
+        ibliData.getDivIdToIndex($scope.period).then(function (data) {
+          ibliData.getGeoJson().then(function (data) {
+            $scope.geojson = data;
+          });
         });
       });
-    });
+    }
   })
   .directive('payouts', function () {
     var path = Drupal.settings.ibli_general.iblimap_library_path;
